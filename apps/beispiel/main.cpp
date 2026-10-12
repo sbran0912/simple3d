@@ -106,13 +106,13 @@ int main() {
         }
 
         // Szenen-Rotation als explizite Modell-Matrix; Position je Koerper dazu.
-        const Matrix4x4 scene = RotateMatrix(0, angle, 0);
+        const Matrix4x4 sceneRot = RotateMatrix(0, angle, 0);
         DrawMesh(cubeMesh, cubeStyle,
-                 MultMatrix(scene, TranslateMatrix(cubeX, cubeY, cubeZ)));
+                 MultMatrix(sceneRot, TranslateMatrix(cubeX, cubeY, cubeZ)));
         DrawMesh(pyramidMesh, pyramidStyle,
-                 MultMatrix(scene, TranslateMatrix(pyrX, pyrY, pyrZ)));
+                 MultMatrix(sceneRot, TranslateMatrix(pyrX, pyrY, pyrZ)));
         DrawMesh(sphereMesh, sphereStyle,
-                 MultMatrix(scene, TranslateMatrix(sphX, sphY, sphZ)));
+                 MultMatrix(sceneRot, TranslateMatrix(sphX, sphY, sphZ)));
     };
 
     /* Start */
