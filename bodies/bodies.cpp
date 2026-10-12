@@ -185,14 +185,12 @@ vector<Face> Body::WorldFaces() const {
     return TransformFaces(Faces, ModelMatrix());
 }
 
-Body MakeBody(const Mesh& geometry, const Vec3& pos, const ColorState& color,
-              double lineWidth, double rotX, double rotY, double rotZ) {
+Body MakeBody(const Mesh& geometry, const Vec3& pos, double rotX,
+              double rotY, double rotZ) {
     Body b;
     b.Geometry = geometry;
     b.Faces = BuildFaces(b.Geometry);
     b.Pos = pos;
-    b.Color = color;
-    b.LineWidth = lineWidth;
     b.RotX = rotX;
     b.RotY = rotY;
     b.RotZ = rotZ;

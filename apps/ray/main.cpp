@@ -43,17 +43,26 @@ static Mesh ShiftMeshY(const Mesh& mesh, double dy) {
     return out;
 }
 
-// BodyStyle liefert Fuell- und Kantenfarbe eines Bodies.
-static ShapeStyle BodyStyle(const Body& b) {
+// BodyStyle liefert den Zeichen-Stil eines Bodies. Farbe und Linienbreite
+// sind Render-Information und werden daher nicht im Body gespeichert,
+// sondern hier in den ShapeStyle gelegt (an DrawMesh uebergeben).
+static ShapeStyle BodyStyle(const ColorState& color, double lineWidth) {
     ShapeStyle s;
     s.stroke.Set = true;
-    s.stroke.Color = b.Color;
+    s.stroke.Color = color;
     s.fill.Set = true;
-    s.fill.Color = b.Color;
-    s.lineWidth = b.LineWidth;
+    s.fill.Color = color;
+    s.lineWidth = lineWidth;
     s.mode = StyleBoth;
     return s;
 }
+
+// SceneBody paart einen Body mit seinen Darstellungsdaten.
+struct SceneBody {
+    Body Object;
+    ColorState Color;
+    double LineWidth = 1;
+};
 
 int main() {
     const int screenW = 1600;
@@ -80,12 +89,12 @@ int main() {
     const ColorState cyan = ParseHex("#00ffff");
     const ColorState white = ParseHex("#ffffff");
 
-    vector<Body> bodies{
-        MakeBody(boxMesh, {150, 0, 50}, red, 2, 0, 0, 0),
-        MakeBody(boxMesh, {0, 0, 100}, cyan, 2, 0, 0, 0),
-        MakeBody(boxMesh, {-150, 0, -100}, red, 2, 0, 0, 0),
-        MakeBody(boxMesh, {-200, 0, 30}, cyan, 2, 0, numbers::pi / 2, 0),
-        MakeBody(pyrMesh, {100, 0, -100}, white, 1, 0, 0, 0), // Default: weiss, 1
+    vector<SceneBody> bodies{
+        {MakeBody(boxMesh, {150, 0, 50}, 0, 0, 0), red, 2},
+        {MakeBody(boxMesh, {0, 0, 100}, 0, 0, 0), cyan, 2},
+        {MakeBody(boxMesh, {-150, 0, -100}, 0, 0, 0), red, 2},
+        {MakeBody(boxMesh, {-200, 0, 30}, numbers::pi / 2, 0, 0), cyan, 2},
+        {MakeBody(pyrMesh, {100, 0, -100}, 0, 0, 0), white, 1}, // Default: weiss, 1
     };
 
     /* ----
@@ -121,15 +130,17 @@ int main() {
         SetView(view);
         Background(ColorInput(40, 40, 40));
 
-        // Alle Bodies zeichnen (Mesh einmal erzeugt, Modell-Matrix explizit).
+        // Alle Bodies zeichnen (Mesh einmal erzeugt, Modell-Matrix explizit,
+        // Linienbreite kommt aus dem ShapeStyle).
         for (const auto& b : bodies) {
-            DrawMesh(b.Geometry, BodyStyle(b), b.ModelMatrix());
+            DrawMesh(b.Object.Geometry, BodyStyle(b.Color, b.LineWidth),
+                     b.Object.ModelMatrix());
         }
 
         // Welt-Faces aller Bodies (pro Frame neu, wie in der Referenz).
         vector<Face> faces;
         for (const auto& b : bodies) {
-            const vector<Face> wf = b.WorldFaces();
+            const vector<Face> wf = b.Object.WorldFaces();
             faces.insert(faces.end(), wf.begin(), wf.end());
         }
 

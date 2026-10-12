@@ -1,4 +1,5 @@
 #include "lib3d/lib3d.hpp"
+#include "bodies/bodies.hpp"
 
 #include <chrono>
 #include <cstdio>
@@ -17,15 +18,12 @@ using std::printf;
 int main() {
     const int screenW = 1200;
     const int screenH = 800;
-
     const double fovY = 1.2;
     const double zNear = 0.1;
     const double zFar = 1000;
-
     const Vec3 camPos{50, 100, 200};
     const Vec3 camTarget{0, 0, 0};
     const Vec3 camUp{0, 1, 0};
-
     const Vec3 sunDir{0.5, 1.0, 0.3};
 
     const PrimitiveStyle gridStyle{
@@ -42,6 +40,9 @@ int main() {
     // Mesh EINMAL erzeugen und wiederverwenden (statt pro Frame).
     // Aufloesung: segments = 20 -> slices = 20, stacks = 10.
     const Mesh ballMesh = MakeSphereMesh(40, 40, 40);
+
+    // Kugel als Body erstellen (wird sich drehen)
+    Body ballBody = MakeBody(ballMesh, {0, 40, 0});
 
     const double gridSize = 600;
     const int gridCells = 24;
@@ -71,11 +72,9 @@ int main() {
         SetFog(100, 400, 0.25, 0.25, 0.25, 1);
 
         const auto view = LookAtMatrix(camPos, camTarget, camUp);
-        const auto proj = PerspectiveMatrix(
-            fovY, static_cast<double>(GetWidth()) / GetHeight(), zNear, zFar);
+        const auto proj = PerspectiveMatrix(fovY, static_cast<double>(GetWidth()) / GetHeight(), zNear, zFar);
         SetProjection(proj);
         SetView(view);
-
         const auto camLight = sunDir.TransformDir(view);
         SetLightDirection(camLight.X, camLight.Y, camLight.Z);
 
@@ -90,8 +89,8 @@ int main() {
 
         // Kugel rotieren lassen: Szene-Rotation * Verschiebung an (0,16,0).
         angle += 0.01;
-        const Matrix4x4 ballModel = MultMatrix(RotateMatrix(0, angle, 0), TranslateMatrix(0, 40, 0));
-        DrawMesh(ballMesh, ballStyle, ballModel);
+        ballBody.RotY = angle;
+        DrawMesh(ballBody.Geometry, ballStyle, ballBody.ModelMatrix());
     };
 
     /* Start */
@@ -103,7 +102,6 @@ int main() {
     }
 
     SetBatchSort(true);
-
     StartAnimation(draw);
     return 0;
 }

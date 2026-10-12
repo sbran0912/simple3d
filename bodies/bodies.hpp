@@ -59,7 +59,8 @@ struct ClosestFaceHit {
 ClosestFaceHit ClosestPointToFace(const Vec3& p, const Face& face);
 
 // Body ist ein platzierbarer, kollisionsfaehiger Koerper: Mesh + lokale Faces
-// + Transform + Darstellung.
+// + Transform. Darstellungsdaten (Farbe, Linienbreite) gehoeren nicht
+// hierher, sondern in den ShapeStyle beim Zeichnen (DrawMesh).
 struct Body {
     Mesh Geometry;      // Zeichengeometrie (lokal)
     vector<Face> Faces; // lokale Faces (inkl. Normalen)
@@ -67,8 +68,6 @@ struct Body {
     double RotX = 0;
     double RotY = 0;
     double RotZ = 0;
-    ColorState Color{1, 1, 1, 1};
-    double LineWidth = 1;
 
     // ModelMatrix ist die Modellmatrix (Translation * Rotation).
     Matrix4x4 ModelMatrix() const;
@@ -78,6 +77,7 @@ struct Body {
 };
 
 // MakeBody erzeugt einen Body aus einem Mesh. Die Faces werden automatisch
-// aus der Geometrie ermittelt (Single Source of Truth).
-Body MakeBody(const Mesh& geometry, const Vec3& pos, const ColorState& color,
-              double lineWidth, double rotX = 0, double rotY = 0, double rotZ = 0);
+// aus der Geometrie ermittelt (Single Source of Truth). Farbe und
+// Linienbreite kommen beim Zeichnen ueber den ShapeStyle (DrawMesh).
+Body MakeBody(const Mesh& geometry, const Vec3& pos, double rotX = 0,
+              double rotY = 0, double rotZ = 0);
