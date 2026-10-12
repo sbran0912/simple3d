@@ -1,0 +1,109 @@
+#include "lib3d/lib3d.hpp"
+
+#include <chrono>
+#include <cstdio>
+#include <exception>
+
+// Importiert werden nur die tatsaechlich verwendeten std-Namen.
+namespace chrono = std::chrono;
+using std::exception;
+using std::printf;
+
+// ====================================================================
+// Vorlage ohne Physik: Bodengitter und eine Kugel. Die Kugel wird ueber ein
+// einmal erzeugtes Mesh (DrawMesh) gezeichnet, das Gitter ueber DrawLine.
+// ====================================================================
+
+int main() {
+    const int screenW = 1200;
+    const int screenH = 800;
+
+    const double fovY = 1.2;
+    const double zNear = 0.1;
+    const double zFar = 1000;
+
+    const Vec3 camPos{50, 100, 200};
+    const Vec3 camTarget{0, 0, 0};
+    const Vec3 camUp{0, 1, 0};
+
+    const Vec3 sunDir{0.5, 1.0, 0.3};
+
+    const PrimitiveStyle gridStyle{
+        .stroke = ColorInput("#777774"),
+        .lineWidth = 1,
+    };
+    const ShapeStyle ballStyle{
+        .stroke = ColorInput("#2f3a00"),
+        .fill = ColorInput("#d3ff44"),
+        .lineWidth = 1,
+        .mode = StyleBoth,
+    };
+
+    // Mesh EINMAL erzeugen und wiederverwenden (statt pro Frame).
+    // Aufloesung: segments = 20 -> slices = 20, stacks = 10.
+    const Mesh ballMesh = MakeSphereMesh(40, 40, 40);
+
+    const double gridSize = 600;
+    const int gridCells = 24;
+
+    double angle = 0;
+
+    int fpsFrames = 0;
+    auto fpsLastTime = chrono::steady_clock::now();
+
+    auto updateFps = [&]() {
+        fpsFrames++;
+        const auto now = chrono::steady_clock::now();
+        const auto elapsed =
+            chrono::duration_cast<chrono::milliseconds>(now - fpsLastTime).count();
+        if (elapsed >= 500) {
+            printf("FPS: %d\n", static_cast<int>(fpsFrames * 1000 / elapsed));
+            fpsFrames = 0;
+            fpsLastTime = now;
+        }
+    };
+
+    /* Loop */
+    auto draw = [&]() {
+        updateFps();
+
+        Background(ColorInput(40, 40, 40));
+        SetFog(100, 400, 0.25, 0.25, 0.25, 1);
+
+        const auto view = LookAtMatrix(camPos, camTarget, camUp);
+        const auto proj = PerspectiveMatrix(
+            fovY, static_cast<double>(GetWidth()) / GetHeight(), zNear, zFar);
+        SetProjection(proj);
+        SetView(view);
+
+        const auto camLight = sunDir.TransformDir(view);
+        SetLightDirection(camLight.X, camLight.Y, camLight.Z);
+
+        // Bodengitter (XZ-Ebene bei y=0) aus einzelnen Linien.
+        const double half = gridSize / 2;
+        const double step = gridSize / gridCells;
+        for (int i = 0; i <= gridCells; i++) {
+            const double p = -half + i * step;
+            DrawLine(p, 0, -half, p, 0, half, gridStyle);
+            DrawLine(-half, 0, p, half, 0, p, gridStyle);
+        }
+
+        // Kugel rotieren lassen: Szene-Rotation * Verschiebung an (0,16,0).
+        angle += 0.01;
+        const Matrix4x4 ballModel = MultMatrix(RotateMatrix(0, angle, 0), TranslateMatrix(0, 40, 0));
+        DrawMesh(ballMesh, ballStyle, ballModel);
+    };
+
+    /* Start */
+    try {
+        Init(screenW, screenH);
+    } catch (const exception& e) {
+        fprintf(stderr, "%s\n", e.what());
+        return 1;
+    }
+
+    SetBatchSort(true);
+
+    StartAnimation(draw);
+    return 0;
+}
