@@ -5,6 +5,7 @@
 
 #include "color.hpp"
 #include "mat4.hpp"
+#include "vec.hpp"
 
 // Importiert werden nur die tatsaechlich verwendeten std-Namen.
 using std::function;
@@ -128,3 +129,51 @@ void Circle(double x, double y, double z, double radius,
             const Matrix4x4& model = IdentityMatrix());
 void Polygon(const vector<double>& pts, DrawStyle style,
              const Matrix4x4& model = IdentityMatrix());
+
+// =================================================================
+// KAMERA- UND SZENEN-BUENDEL
+//
+// Reine Daten-Huellen plus Apply-Funktionen. Sie befuellen weiterhin die
+// expliziten Setter; es entsteht KEIN globaler Modell-/Kamera-Zustand.
+// =================================================================
+
+// Camera buendelt die perspektivischen Parameter und die Blickrichtung.
+struct Camera {
+    Vec3 Pos{50, 100, 200};
+    Vec3 Target{0, 0, 0};
+    Vec3 Up{0, 1, 0};
+    double FovY = 1.2;
+    double Near = 0.1;
+    double Far  = 1000;
+
+    // Reine Mathe -> inline im Header.
+    Matrix4x4 View() const { return LookAtMatrix(Pos, Target, Up); }
+    Matrix4x4 Projection(double aspect) const {
+        return PerspectiveMatrix(FovY, aspect, Near, Far);
+    }
+};
+
+// Fog buendelt die Tiefen-Nebel-Parameter. Enabled == false -> kein Nebel.
+struct Fog {
+    bool Enabled = false;
+    double Near = 0;
+    double Far  = 1;
+    ColorState Color{0, 0, 0, 0};
+};
+
+// Scene buendelt Kamera + Welt-Attribute (Licht, Nebel, Hintergrund).
+// Farb-/Graustufenwerte sind hier als ColorState (0..1) hinterlegt.
+struct Scene {
+    Camera Cam;
+    Vec3 SunDir{0.5, 1.0, 0.3};
+    Fog Fog_;
+    ColorState Background{40 / 255.0, 40 / 255.0, 40 / 255.0, 1};
+    bool BatchSort = false;
+};
+
+// ApplyCamera setzt View + Projection (Aspect aus GetWidth/GetHeight).
+void ApplyCamera(const Camera& cam);
+
+// BeginScene wendet die Szene an: Hintergrund, Nebel, Kamera und
+// Sonnenrichtung (in Kamerakoordinaten). Pro Frame aufzurufen.
+void BeginScene(const Scene& scene);

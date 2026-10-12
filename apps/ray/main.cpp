@@ -67,14 +67,18 @@ struct SceneBody {
 int main() {
     const int screenW = 1600;
     const int screenH = 1000;
-    const double fovY = 1.2;
-    const double zNear = 0.1;
-    const double zFar = 1000;
     const int coneLines = 20;
     const double camHeight = 140;
 
-    const Vec3 camTarget{0, 0, 0};
-    const Vec3 camUp{0, 1, 0};
+    Scene scene;
+    scene.Cam.Target = {0, 0, 0};
+    scene.Cam.Up     = {0, 1, 0};
+    scene.Cam.FovY   = 1.2;
+    scene.Cam.Near   = 0.1;
+    scene.Cam.Far    = 1000;
+    scene.SunDir     = {1, 0, 0};
+    scene.Fog_       = {true, 100, 600, ColorState{0.25, 0.25, 0.25, 1}};
+
     const double camRadius = sqrt(40 * 40 + 180 * 180);
     double timeAccum = 0;
     double coneRotY = 0;
@@ -114,21 +118,12 @@ int main() {
         }
 
         const double camAngle = timeAccum * 0.15;
-        const Vec3 camPos{
+        scene.Cam.Pos = {
             sin(camAngle) * camRadius,
             camHeight,
             cos(camAngle) * camRadius,
         };
-        const auto view = LookAtMatrix(camPos, camTarget, camUp);
-        const auto proj = PerspectiveMatrix(
-            fovY, static_cast<double>(GetWidth()) / GetHeight(), zNear, zFar);
-        const Vec3 sunDir{1, 0, 0};
-        const auto camLight = sunDir.TransformDir(view);
-        SetLightDirection(camLight.X, camLight.Y, camLight.Z);
-
-        SetProjection(proj);
-        SetView(view);
-        Background(ColorInput(40, 40, 40));
+        BeginScene(scene);
 
         // Alle Bodies zeichnen (Mesh einmal erzeugt, Modell-Matrix explizit,
         // Linienbreite kommt aus dem ShapeStyle).
@@ -190,7 +185,6 @@ int main() {
         fprintf(stderr, "%s\n", e.what());
         return 1;
     }
-    SetFog(100, 600, 0.25, 0.25, 0.25, 1);
     StartAnimation(draw);
     return 0;
 }

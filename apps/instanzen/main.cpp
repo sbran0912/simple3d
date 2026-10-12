@@ -24,15 +24,15 @@ int main() {
     const int screenW = 1200;
     const int screenH = 800;
 
-    const double fovY = 1.2;
-    const double zNear = 0.1;
-    const double zFar = 2000;
-
-    const Vec3 camPos{120, 240, 460};
-    const Vec3 camTarget{0, 0, 0};
-    const Vec3 camUp{0, 1, 0};
-
-    const Vec3 sunDir{0.5, 1.0, 0.3};
+    Scene scene;
+    scene.Cam.Pos    = {120, 240, 460};
+    scene.Cam.Target = {0, 0, 0};
+    scene.Cam.Up     = {0, 1, 0};
+    scene.Cam.FovY   = 1.2;
+    scene.Cam.Near   = 0.1;
+    scene.Cam.Far    = 2000;
+    scene.SunDir     = {0.5, 1.0, 0.3};
+    scene.Fog_       = {true, 400, 1200, ColorState{0.25, 0.25, 0.25, 1}};
 
     const ShapeStyle cubeStyle{
         .stroke = ColorInput("#101010"),
@@ -120,17 +120,7 @@ int main() {
     auto draw = [&]() {
         updateFps();
 
-        Background(ColorInput(40, 40, 40));
-        SetFog(400, 1200, 0.25, 0.25, 0.25, 1);
-
-        const auto view = LookAtMatrix(camPos, camTarget, camUp);
-        const auto proj = PerspectiveMatrix(
-            fovY, static_cast<double>(GetWidth()) / GetHeight(), zNear, zFar);
-        SetProjection(proj);
-        SetView(view);
-
-        const auto camLight = sunDir.TransformDir(view);
-        SetLightDirection(camLight.X, camLight.Y, camLight.Z);
+        BeginScene(scene);
 
         // Szene im Uhrzeigersinn drehen (von oben gesehen).
         angle -= 0.01;

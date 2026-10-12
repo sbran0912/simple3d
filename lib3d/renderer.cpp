@@ -591,6 +591,22 @@ void SetView(const Matrix4x4& m) {
     glUniformMatrix4fv(locView, 1, GL_FALSE, viewUniform.data());
 }
 
+void ApplyCamera(const Camera& cam) {
+    SetProjection(cam.Projection(static_cast<double>(GetWidth()) / GetHeight()));
+    SetView(cam.View());
+}
+
+void BeginScene(const Scene& scene) {
+    Background(scene.Background);
+    if (scene.Fog_.Enabled) {
+        const ColorState& c = scene.Fog_.Color;
+        SetFog(scene.Fog_.Near, scene.Fog_.Far, c.R, c.G, c.B, c.A);
+    }
+    ApplyCamera(scene.Cam);
+    const Vec3 camLight = scene.SunDir.TransformDir(scene.Cam.View());
+    SetLightDirection(camLight.X, camLight.Y, camLight.Z);
+}
+
 int GetPendingDrawCalls() { return static_cast<int>(batchCmds.size()); }
 
 int GetPendingInstancedDrawCalls() { return static_cast<int>(instCmds.size()); }

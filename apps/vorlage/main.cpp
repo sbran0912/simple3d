@@ -18,13 +18,15 @@ using std::printf;
 int main() {
     const int screenW = 1200;
     const int screenH = 800;
-    const double fovY = 1.2;
-    const double zNear = 0.1;
-    const double zFar = 1000;
-    const Vec3 camPos{50, 100, 200};
-    const Vec3 camTarget{0, 0, 0};
-    const Vec3 camUp{0, 1, 0};
-    const Vec3 sunDir{0.5, 1.0, 0.3};
+    Scene scene;
+    scene.Cam.Pos    = {50, 100, 200};
+    scene.Cam.Target = {0, 0, 0};
+    scene.Cam.Up     = {0, 1, 0};
+    scene.Cam.FovY   = 1.2;
+    scene.Cam.Near   = 0.1;
+    scene.Cam.Far    = 1000;
+    scene.SunDir     = {0.5, 1.0, 0.3};
+    scene.Fog_       = {true, 100, 400, ColorState{0.25, 0.25, 0.25, 1}};
 
     const PrimitiveStyle gridStyle{
         .stroke = ColorInput("#777774"),
@@ -55,8 +57,7 @@ int main() {
     auto updateFps = [&]() {
         fpsFrames++;
         const auto now = chrono::steady_clock::now();
-        const auto elapsed =
-            chrono::duration_cast<chrono::milliseconds>(now - fpsLastTime).count();
+        const auto elapsed = chrono::duration_cast<chrono::milliseconds>(now - fpsLastTime).count();
         if (elapsed >= 500) {
             printf("FPS: %d\n", static_cast<int>(fpsFrames * 1000 / elapsed));
             fpsFrames = 0;
@@ -68,15 +69,7 @@ int main() {
     auto draw = [&]() {
         updateFps();
 
-        Background(ColorInput(40, 40, 40));
-        SetFog(100, 400, 0.25, 0.25, 0.25, 1);
-
-        const auto view = LookAtMatrix(camPos, camTarget, camUp);
-        const auto proj = PerspectiveMatrix(fovY, static_cast<double>(GetWidth()) / GetHeight(), zNear, zFar);
-        SetProjection(proj);
-        SetView(view);
-        const auto camLight = sunDir.TransformDir(view);
-        SetLightDirection(camLight.X, camLight.Y, camLight.Z);
+        BeginScene(scene);
 
         // Bodengitter (XZ-Ebene bei y=0) aus einzelnen Linien.
         const double half = gridSize / 2;
