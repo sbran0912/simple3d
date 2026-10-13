@@ -29,7 +29,7 @@ int main() {
     scene.Cam.Near   = 0.1;
     scene.Cam.Far    = 1000;
     scene.SunDir     = {0.5, 1.0, 0.3};
-    scene.Fog_       = {true, 150, 500, ColorState{0.25, 0.25, 0.25, 1}};
+    scene.sceneFog       = {true, 150, 500, ColorState{0.25, 0.25, 0.25, 1}};
 
     const ShapeStyle cubeStyle{
         .stroke = ColorInput("#1b1b1b"),

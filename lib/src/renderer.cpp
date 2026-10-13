@@ -641,9 +641,9 @@ void ApplyCamera(const Camera& cam) {
 
 void BeginScene(const Scene& scene) {
     Background(scene.Background);
-    if (scene.Fog_.Enabled) {
-        const ColorState& c = scene.Fog_.Color;
-        SetFog(scene.Fog_.Near, scene.Fog_.Far, c.R, c.G, c.B, c.A);
+    if (scene.sceneFog.Enabled) {
+        const ColorState& c = scene.sceneFog.Color;
+        SetFog(scene.sceneFog.Near, scene.sceneFog.Far, c.R, c.G, c.B, c.A);
     }
     ApplyCamera(scene.Cam);
     const Vec3 camLight = scene.SunDir.TransformDir(scene.Cam.View());

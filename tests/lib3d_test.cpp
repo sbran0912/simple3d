@@ -209,18 +209,28 @@ static void TestMeshShapes() {
     EXPECT(true, "DrawMesh aufrufbar");
 }
 
+// Ruft einen Testblock auf und gibt aus, welcher Bestandteil geprueft wird.
+static void RunTest(const char* name, void (*fn)()) {
+    printf("== %s ==\n", name);
+    const int before = g_fails;
+    fn();
+    if (g_fails == before) {
+        printf("   ok\n");
+    }
+}
+
 int main() {
-    TestVec3CrossAndDot();
-    TestVec3Normalize();
-    TestLookAtCameraMapsToOrigin();
-    TestPerspectiveClipspace();
-    TestRotateMatrixY();
-    TestMeshGeometry();
-    TestBatchMerging();
-    TestInstancing();
-    TestParseColor();
-    TestClosestPointToFace();
-    TestMeshShapes();
+    RunTest("Vec3: Kreuzprodukt & Skalarprodukt", TestVec3CrossAndDot);
+    RunTest("Vec3: Normalisierung", TestVec3Normalize);
+    RunTest("Kamera: LookAt -> Ursprung", TestLookAtCameraMapsToOrigin);
+    RunTest("Projektion: Near-Ebene (Clip-Space)", TestPerspectiveClipspace);
+    RunTest("Matrix: Rotation um Y", TestRotateMatrixY);
+    RunTest("Meshes: Wuerfel/Pyramide (Dreiecke & Kanten)", TestMeshGeometry);
+    RunTest("Batching: Zusammenfassen von Draw-Calls", TestBatchMerging);
+    RunTest("Instancing: 10 Instanzen -> Draw-Calls", TestInstancing);
+    RunTest("Farben: ParseColor (hex/grau/rgba)", TestParseColor);
+    RunTest("Bodies: ClosestPointToFace", TestClosestPointToFace);
+    RunTest("Meshes: DrawMesh-Smoke-Test", TestMeshShapes);
 
     if (g_fails == 0) {
         printf("Alle Tests bestanden.\n");

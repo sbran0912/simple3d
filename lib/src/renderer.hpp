@@ -223,7 +223,7 @@ struct Fog {
 struct Scene {
     Camera Cam;
     Vec3 SunDir{0.5, 1.0, 0.3};
-    Fog Fog_;
+    Fog sceneFog;
     ColorState Background{40 / 255.0, 40 / 255.0, 40 / 255.0, 1};
     bool BatchSort = false;
 };

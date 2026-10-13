@@ -77,7 +77,7 @@ int main() {
     scene.Cam.Near   = 0.1;
     scene.Cam.Far    = 1000;
     scene.SunDir     = {1, 0, 0};
-    scene.Fog_       = {true, 100, 600, ColorState{0.25, 0.25, 0.25, 1}};
+    scene.sceneFog       = {true, 100, 600, ColorState{0.25, 0.25, 0.25, 1}};
 
     const double camRadius = sqrt(40 * 40 + 180 * 180);
     double timeAccum = 0;
