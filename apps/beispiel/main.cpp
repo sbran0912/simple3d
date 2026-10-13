@@ -1,4 +1,4 @@
-#include "lib3d/lib3d.hpp"
+#include "lib3d.hpp"
 
 #include <chrono>
 #include <cstdio>

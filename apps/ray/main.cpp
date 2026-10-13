@@ -1,5 +1,5 @@
-#include "lib3d/lib3d.hpp"
-#include "bodies/bodies.hpp"
+#include "lib3d.hpp"
+#include "bodies.hpp"
 
 #include <chrono>
 #include <cmath>

@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "lib3d/lib3d.hpp"
+#include "lib3d.hpp"
 
 // Importiert werden nur die tatsaechlich verwendeten std-Namen.
 using std::vector;
