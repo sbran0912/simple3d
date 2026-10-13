@@ -33,6 +33,54 @@ enum EffectMode {
     EffectPulse = 2,
 };
 
+// Key ist eine Auswahl haeufiger Tasten. Die Werte entsprechen exakt den
+// GLFW_KEY_*-Codes, daher koennen die Polling-Funktionen auch direkt mit einem
+// GLFW-Code aufgerufen werden (int). Weitere Tasten lassen sich per
+// static_cast<Key>(glfwCode) ergaenzen.
+enum Key {
+    KeySpace = 32,
+    KeyApostrophe = 39,
+    KeyComma = 44,
+    KeyMinus = 45,
+    KeyPeriod = 46,
+    KeySlash = 47,
+    Key0 = 48, Key1, Key2, Key3, Key4, Key5, Key6, Key7, Key8, Key9,
+    KeySemicolon = 59,
+    KeyEqual = 61,
+    KeyA = 65, KeyB, KeyC, KeyD, KeyE, KeyF, KeyG, KeyH, KeyI, KeyJ, KeyK,
+    KeyL, KeyM, KeyN, KeyO, KeyP, KeyQ, KeyR, KeyS, KeyT, KeyU, KeyV, KeyW,
+    KeyX, KeyY, KeyZ,
+    KeyLeftBracket = 91,
+    KeyBackslash = 92,
+    KeyRightBracket = 93,
+    KeyGraveAccent = 96,
+    KeyEscape = 256,
+    KeyEnter = 257,
+    KeyTab = 258,
+    KeyBackspace = 259,
+    KeyInsert = 260,
+    KeyDelete = 261,
+    KeyRight = 262,
+    KeyLeft = 263,
+    KeyDown = 264,
+    KeyUp = 265,
+    KeyPageUp = 266,
+    KeyPageDown = 267,
+    KeyHome = 268,
+    KeyEnd = 269,
+    KeyCapsLock = 280,
+    KeyF1 = 290, KeyF2, KeyF3, KeyF4, KeyF5, KeyF6,
+    KeyF7, KeyF8, KeyF9, KeyF10, KeyF11, KeyF12,
+    KeyLeftShift = 340,
+    KeyLeftControl = 341,
+    KeyLeftAlt = 342,
+    KeyLeftSuper = 343,
+    KeyRightShift = 344,
+    KeyRightControl = 345,
+    KeyRightAlt = 346,
+    KeyRightSuper = 347,
+};
+
 // Instance beschreibt eine Instanz fuer das GPU-Instancing: eine Modell-Matrix
 // (row-major, wie Matrix4x4) und eine Farbe.
 struct Instance {
@@ -51,6 +99,15 @@ bool IsMouseDown();
 
 // IsMouseUp gibt einmalig true zurueck, wenn die Maustaste losgelassen wurde.
 bool IsMouseUp();
+
+// IsKeyDown gibt true zurueck, solange die Taste gedrueckt ist (Dauerdruck,
+// z. B. fuer laufende Steuerung pro Frame). key ist ein Key-Wert oder ein
+// GLFW_KEY_*-Code.
+bool IsKeyDown(int key);
+
+// IsKeyPressed gibt einmalig true zurueck, wenn die Taste seit der letzten
+// Abfrage gedrueckt wurde (konsumierend wie IsMouseUp, fuer Trigger).
+bool IsKeyPressed(int key);
 
 // SetProjection/SetView setzen die Kamera-Matrizen. Die Modell-Matrix wird
 // NICHT mehr als globaler Zustand gehalten, sondern pro Zeichenaufruf als

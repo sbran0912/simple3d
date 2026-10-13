@@ -118,6 +118,12 @@ double mouseX = 0;
 double mouseY = 0;
 int mouseStatus = 0;
 
+// Tastatur: Dauerdruck (keyDown) und einmalig konsumierte Druckkante
+// (keyPressed) je Taste. Index ist der GLFW-key-Code.
+constexpr int kMaxKeys = 512;
+array<bool, kMaxKeys> keyDown{};
+array<bool, kMaxKeys> keyPressed{};
+
 // Aktueller Zeichenzustand.
 DrawState state{};
 
@@ -455,6 +461,25 @@ void OnMouseButton(GLFWwindow* /*win*/, int button, int action, int /*mods*/) {
     }
 }
 
+// OnKey pflegt den Tastatur-Zustand (IsKeyDown/IsKeyPressed) und beendet das
+// Programm sauber mit ESC. Im exklusiven Vollbild gibt es keine Titelleiste
+// und damit keinen zuverlaessigen Close-Request; ESC loest
+// glfwSetWindowShouldClose aus, die Schleife laeuft aus und glfwTerminate()
+// stellt den vorherigen Video-Modus wieder her.
+void OnKey(GLFWwindow* win, int key, int /*scancode*/, int action, int /*mods*/) {
+    if (key >= 0 && key < kMaxKeys) {
+        if (action == GLFW_PRESS) {
+            keyDown[key] = true;
+            keyPressed[key] = true; // Kante merken (GLFW_REPEAT zaehlt nicht)
+        } else if (action == GLFW_RELEASE) {
+            keyDown[key] = false;
+        }
+    }
+    if (action == GLFW_PRESS && key == GLFW_KEY_ESCAPE) {
+        glfwSetWindowShouldClose(win, GLFW_TRUE);
+    }
+}
+
 void OnFramebufferSize(GLFWwindow* /*win*/, int width, int height) {
     frameW = width;
     frameH = height;
@@ -581,6 +606,24 @@ bool IsMouseUp() {
     return false;
 }
 
+bool IsKeyDown(int key) {
+    if (key < 0 || key >= kMaxKeys) {
+        return false;
+    }
+    return keyDown[key];
+}
+
+bool IsKeyPressed(int key) {
+    if (key < 0 || key >= kMaxKeys) {
+        return false;
+    }
+    if (keyPressed[key]) {
+        keyPressed[key] = false;
+        return true;
+    }
+    return false;
+}
+
 void SetProjection(const Matrix4x4& m) {
     projUniform = FlattenMatrix(m);
     glUniformMatrix4fv(locProjection, 1, GL_FALSE, projUniform.data());
@@ -665,7 +708,23 @@ void Init(int w, int h) {
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
     glfwWindowHint(GLFW_SAMPLES, 4);
 
-    window = glfwCreateWindow(w, h, "3D Renderer", nullptr, nullptr);
+    // Vollbild (exklusiv): Fenster auf dem primaeren Monitor in dessen aktuellem
+    // Video-Modus erzeugen. Ist kein Monitor verfuegbar (z. B. Wayland-Test),
+    // faellt es auf ein normales Fenster mit der uebergebenen Groesse zurueck.
+    GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+    const GLFWvidmode* mode = monitor != nullptr ? glfwGetVideoMode(monitor) : nullptr;
+
+    int winW = w;
+    int winH = h;
+    if (mode != nullptr) {
+        winW = mode->width;
+        winH = mode->height;
+    }
+
+    // Der 5. Parameter ist das Share-Fenster (hier: keins). Bei gesetztem
+    // Monitor waehlt GLFW den zum Wunschformat naechstgelegenen Video-Modus,
+    // bei winW/winH = aktuelle Monitoraufloesung also den Desktop-Modus.
+    window = glfwCreateWindow(winW, winH, "3D Renderer", monitor, nullptr);
     if (window == nullptr) {
         glfwTerminate();
         throw runtime_error("Fenster konnte nicht erstellt werden");
@@ -727,9 +786,16 @@ void Init(int w, int h) {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_PROGRAM_POINT_SIZE);
 
-    frameW = w;
-    frameH = h;
-    glViewport(0, 0, w, h);
+    // Groesse/Viewport aus dem tatsaechlichen Framebuffer uebernehmen. Im
+    // Vollbild weicht die Aufloesung von der an Init uebergebenen ab.
+    glfwGetFramebufferSize(window, &frameW, &frameH);
+    if (frameW <= 0) {
+        frameW = winW;
+    }
+    if (frameH <= 0) {
+        frameH = winH;
+    }
+    glViewport(0, 0, frameW, frameH);
     startTime = glfwGetTime();
 
     // Batch-Zustand initialisieren.
@@ -749,9 +815,14 @@ void Init(int w, int h) {
     batchVerts.clear();
     batchCmds.clear();
 
+    // Tastatur-Zustand zuruecksetzen.
+    keyDown.fill(false);
+    keyPressed.fill(false);
+
     // Eingabe-Callbacks.
     glfwSetCursorPosCallback(window, OnCursorPos);
     glfwSetMouseButtonCallback(window, OnMouseButton);
+    glfwSetKeyCallback(window, OnKey);
     glfwSetFramebufferSizeCallback(window, OnFramebufferSize);
 }
 

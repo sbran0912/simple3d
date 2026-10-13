@@ -55,6 +55,57 @@ gesammelten Zeichenbefehle (`FlushBatch`). Man zeichnet also *nur* über die
 | `GetWidth()` / `GetHeight()` | Fenstergröße in Pixeln. |
 | `IsMouseDown()` | `true`, solange linke Maustaste gedrückt. |
 | `IsMouseUp()` | einmalig `true` beim Loslassen. |
+| `IsKeyDown(int key)` | `true`, solange die Taste gedrückt ist (Dauerdruck). |
+| `IsKeyPressed(int key)` | einmalig `true` beim Drücken (konsumierend, für Trigger). |
+
+> **Vollbild & Beenden:** `Init` öffnet das Fenster **exklusiv im Vollbild**
+> auf dem primären Monitor (dessen aktuelle Auflösung; `w`/`h` wirken dann nur
+> als Wunschformat bzw. als Fallback, falls kein Monitor verfügbar ist).
+> Beendet wird mit **ESC** oder Alt+F4; beide setzen den Close-Request, die
+> Schleife läuft aus und `glfwTerminate()` stellt den vorherigen Video-Modus
+> wieder her. `NoLoop()` stoppt die Schleife ebenso sauber.
+
+### Tastatureingaben (Polling)
+
+Tastatur wird **pollend** im `draw`-Lambda abgefragt (kein Callback in der
+App nötig). Die Bibliothek pflegt den Zustand im Hintergrund; ESC ist fest
+belegt (siehe oben) und löst das Beenden aus.
+
+- `IsKeyDown(int key)` – `true`, solange die Taste gedrückt ist → für
+  **laufende Steuerung** (Kamera, Bewegung pro Frame).
+- `IsKeyPressed(int key)` – einmalig `true` beim Drücken; der Aufruf
+  **konsumiert** die Kante (wie `IsMouseUp`) → für **Trigger** (Effekt
+  umschalten, Pause, Screenshot).
+
+Der Parameter ist ein Wert aus dem `enum Key` (in `renderer.hpp`); die Werte
+entsprechen den `GLFW_KEY_*`-Codes, sodass auch ein GLFW-Code direkt übergeben
+werden kann. Selbst definierte Tasten: `static_cast<Key>(glfwCode)`.
+
+```cpp
+#include "lib3d.hpp"
+
+Scene scene;
+double camAngle = 0;
+
+auto draw = [&]() {
+    BeginScene(scene);
+
+    // Laufende Steuerung: Pfeiltasten drehen die Kamera pro Frame.
+    const double speed = 0.03;
+    if (IsKeyDown(KeyLeft))  camAngle -= speed;
+    if (IsKeyDown(KeyRight)) camAngle += speed;
+
+    // Trigger: Leertaste schaltet den Effekt um (nur einmal pro Druck).
+    if (IsKeyPressed(KeySpace)) {
+        SetEffect(EffectPulse);
+    }
+    // ...
+};
+```
+
+> Hinweis: `IsKeyPressed` liefert die Kante nur **einmal** – wer denselben
+> Tastendruck in mehreren Zweigen auswerten will, liest sie in eine Variable
+> und verzweigt darauf.
 
 ---
 
