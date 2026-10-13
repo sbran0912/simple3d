@@ -221,9 +221,21 @@ struct Fog {
 // Scene buendelt Kamera + Welt-Attribute (Licht, Nebel, Hintergrund).
 // Farb-/Graustufenwerte sind hier als ColorState (0..1) hinterlegt.
 struct Scene {
-    Camera Cam;
+    Camera Cam{
+        .Pos = {50, 100, 200},
+        .Target = {0, 0, 0},
+        .Up = {0, 1, 0},
+        .FovY = 1.2,
+        .Near = 0.1,
+        .Far = 1000
+    };
     Vec3 SunDir{0.5, 1.0, 0.3};
-    Fog sceneFog;
+    Fog sceneFog{
+        .Enabled = true,
+        .Near = 100,
+        .Far = 400,
+        .Color = {0.25, 0.25, 0.25, 1}
+    };
     ColorState Background{40 / 255.0, 40 / 255.0, 40 / 255.0, 1};
     bool BatchSort = false;
 };

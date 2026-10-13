@@ -19,14 +19,6 @@ int main() {
     const int screenW = 1200;
     const int screenH = 800;
     Scene scene;
-    scene.Cam.Pos    = {50, 100, 200};
-    scene.Cam.Target = {0, 0, 0};
-    scene.Cam.Up     = {0, 1, 0};
-    scene.Cam.FovY   = 1.2;
-    scene.Cam.Near   = 0.1;
-    scene.Cam.Far    = 1000;
-    scene.SunDir     = {0.5, 1.0, 0.3};
-    scene.sceneFog       = {true, 100, 400, ColorState{0.25, 0.25, 0.25, 1}};
 
     const PrimitiveStyle gridStyle{
         .stroke = ColorInput("#777774"),
