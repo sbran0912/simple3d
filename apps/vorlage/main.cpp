@@ -18,7 +18,7 @@ using std::printf;
 int main() {
     Scene scene;
 
-    const PrimitiveStyle gridStyle{
+    const ShapeStyle gridStyle{
         .stroke = ColorInput("#777774"),
         .lineWidth = 1,
     };
@@ -36,8 +36,8 @@ int main() {
     // Kugel als Body erstellen (wird sich drehen)
     Body ballBody = MakeBody(ballMesh, {0, 40, 0});
 
-    const double gridSize = 600;
-    const int gridCells = 24;
+    // Bodengitter EINMAL erzeugen und wiederverwenden.
+    const Mesh gridMesh = MakeGridMesh(600, 24);
 
     double angle = 0;
 
@@ -61,14 +61,8 @@ int main() {
 
         BeginScene(scene);
 
-        // Bodengitter (XZ-Ebene bei y=0) aus einzelnen Linien.
-        const double half = gridSize / 2;
-        const double step = gridSize / gridCells;
-        for (int i = 0; i <= gridCells; i++) {
-            const double p = -half + i * step;
-            DrawLine(p, 0, -half, p, 0, half, gridStyle);
-            DrawLine(-half, 0, p, half, 0, p, gridStyle);
-        }
+        // Bodengitter (XZ-Ebene bei y=0) aus dem geteilten Mesh.
+        DrawMesh(gridMesh, gridStyle);
 
         // Kugel rotieren lassen: Szene-Rotation * Verschiebung an (0,16,0).
         angle += 0.01;

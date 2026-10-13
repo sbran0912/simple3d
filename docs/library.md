@@ -263,7 +263,14 @@ struct Mesh {
 Mesh MakeCubeMesh(double w, double h, double d);
 Mesh MakePyramidMesh(double base, double height); // Basis y=0, Spitze y=height
 Mesh MakeSphereMesh(double radius, int slices, int stacks);
+Mesh MakeGridMesh(double size, int cells);        // Bodengitter, XZ-Ebene y=0
 ```
+
+> `MakeGridMesh(size, cells)` – `size` = Kantenlänge, `cells` = Zellen pro
+> Achse (es entstehen `cells+1` Linien je Richtung). Das Gitter liegt bei
+> `y=0` und ist um den Ursprung zentriert; es füllt nur `Lines`. Wie alle
+> Meshes einmal erzeugen und über `DrawMesh(gridMesh, style)` (Modus
+> `StyleStroke`) zeichnen.
 
 > `MakeSphereMesh(radius, slices, stacks)` – `slices` = Längengrade,
 > `stacks` = Breitengrade. Mehr = glatter, aber teurer.

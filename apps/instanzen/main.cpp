@@ -43,7 +43,7 @@ int main() {
         .lineWidth = 1,
         .mode = StyleBoth,
     };
-    const PrimitiveStyle gridStyle{
+    const ShapeStyle gridStyle{
         .stroke = ColorInput("#777774"),
         .lineWidth = 1,
     };
@@ -89,9 +89,8 @@ int main() {
     const Mesh cubeMesh = MakeCubeMesh(cubeSize, cubeSize, cubeSize);
     const Mesh sphereMesh = MakeSphereMesh(sphereRadius, 12, 6);
 
-    // Bodengitter.
-    const double gridSize = 800;
-    const int gridCells = 32;
+    // Bodengitter EINMAL erzeugen und wiederverwenden.
+    const Mesh gridMesh = MakeGridMesh(800, 32);
 
     double angle = 0;
     vector<Instance> cubeInstances(cubePos.size());
@@ -122,14 +121,8 @@ int main() {
         // Szene im Uhrzeigersinn drehen (von oben gesehen).
         angle -= 0.01;
 
-        // Bodengitter (fest).
-        const double half = gridSize / 2;
-        const double step = gridSize / gridCells;
-        for (int i = 0; i <= gridCells; i++) {
-            const double p = -half + i * step;
-            DrawLine(p, 0, -half, p, 0, half, gridStyle);
-            DrawLine(-half, 0, p, half, 0, p, gridStyle);
-        }
+        // Bodengitter (fest) aus dem geteilten Mesh.
+        DrawMesh(gridMesh, gridStyle);
 
         // Instanz-Matrizen aktualisieren: Szene-Rotation * Platzierung * Spin.
         for (size_t i = 0; i < cubePos.size(); i++) {

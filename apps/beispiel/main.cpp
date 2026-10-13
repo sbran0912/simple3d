@@ -46,7 +46,7 @@ int main() {
         .lineWidth = 1,
         .mode = StyleBoth,
     };
-    const PrimitiveStyle gridStyle{
+    const ShapeStyle gridStyle{
         .stroke = ColorInput("#777774"),
         .lineWidth = 1,
     };
@@ -63,9 +63,8 @@ int main() {
     const Mesh pyramidMesh = MakePyramidMesh(pyrBase, pyrHeight);
     const Mesh sphereMesh = MakeSphereMesh(sphRadius, 24, 12);
 
-    // Bodengitter (fest, dient als Referenz fuer die Drehung).
-    const double gridSize = 600;
-    const int gridCells = 24;
+    // Bodengitter (fest, dient als Referenz fuer die Drehung). EINMAL erzeugen.
+    const Mesh gridMesh = MakeGridMesh(600, 24);
 
     double angle = 0;
 
@@ -94,13 +93,7 @@ int main() {
         angle -= 0.01;
 
         // Bodengitter (fest, XZ-Ebene bei y=0) als Referenz.
-        const double half = gridSize / 2;
-        const double step = gridSize / gridCells;
-        for (int i = 0; i <= gridCells; i++) {
-            const double p = -half + i * step;
-            DrawLine(p, 0, -half, p, 0, half, gridStyle);
-            DrawLine(-half, 0, p, half, 0, p, gridStyle);
-        }
+        DrawMesh(gridMesh, gridStyle);
 
         // Szenen-Rotation als explizite Modell-Matrix; Position je Koerper dazu.
         const Matrix4x4 sceneRot = RotateMatrix(0, angle, 0);

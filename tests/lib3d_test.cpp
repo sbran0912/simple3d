@@ -71,6 +71,13 @@ static void TestMeshGeometry() {
     const auto pyr = MakePyramidMesh(2, 3);
     EXPECT(pyr.Triangles.size() == (4 * 3 + 2 * 3) * 3, "Pyramide: 4 Seiten + Basis");
     EXPECT(pyr.Lines.size() == 8 * 2 * 3, "Pyramide: 8 Kanten");
+
+    const auto grid = MakeGridMesh(6, 3);
+    EXPECT(grid.Triangles.empty(), "Gitter: keine Dreiecke");
+    EXPECT(grid.Lines.size() == 2 * (3 + 1) * 2 * 3, "Gitter: 2*(cells+1) Linien");
+
+    const auto gridMin = MakeGridMesh(6, 0);
+    EXPECT(gridMin.Lines.size() == 2 * 2 * 2 * 3, "Gitter: cells < 1 -> 1 Zelle");
 }
 
 static void TestBatchMerging() {

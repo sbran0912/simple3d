@@ -148,3 +148,21 @@ Mesh MakeSphereMesh(double radius, int slices, int stacks) {
     }
     return m;
 }
+
+Mesh MakeGridMesh(double size, int cells) {
+    if (cells < 1) {
+        cells = 1;
+    }
+
+    const double half = size / 2;
+    const double step = size / cells;
+
+    Mesh m;
+    for (int i = 0; i <= cells; i++) {
+        const double p = -half + i * step;
+        // Linie parallel zur Z-Achse und Linie parallel zur X-Achse.
+        AddLine(m.Lines, Vec3{p, 0, -half}, Vec3{p, 0, half});
+        AddLine(m.Lines, Vec3{-half, 0, p}, Vec3{half, 0, p});
+    }
+    return m;
+}

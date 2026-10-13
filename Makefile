@@ -41,7 +41,7 @@ LIB_SRCS := $(wildcard lib/src/*.cpp)
 LIB_OBJS := $(patsubst lib/src/%.cpp,$(BUILD)/lib/%.o,$(LIB_SRCS))
 
 # --- Apps -----------------------------------------------------------
-APP_NAMES := vorlage beispiel instanzen ray
+APP_NAMES := boids ray
 APP_BINS  := $(addprefix $(BIN)/,$(APP_NAMES))
 
 .PHONY: all apps lib test clean run $(addprefix run-,$(APP_NAMES))

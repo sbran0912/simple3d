@@ -26,3 +26,9 @@ Mesh MakePyramidMesh(double base, double height);
 
 // MakeSphereMesh erzeugt eine Kugel um den Ursprung.
 Mesh MakeSphereMesh(double radius, int slices, int stacks);
+
+// MakeGridMesh erzeugt ein Bodengitter in der XZ-Ebene bei y=0, zentriert um
+// den Ursprung. size ist die Kantenlaenge, cells die Anzahl der Zellen pro
+// Achse (es entstehen cells+1 Linien je Richtung). Es werden nur Linien
+// befuellt (Triangles bleibt leer).
+Mesh MakeGridMesh(double size, int cells);
