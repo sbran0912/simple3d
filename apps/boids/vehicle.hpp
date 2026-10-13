@@ -1,13 +1,53 @@
 #pragma once
 
 #include <array>
+#include <vector>
 #include "bodies.hpp"
 
+// Importiert werden nur die tatsaechlich verwendeten std-Namen.
 using std::array;
-using std::sqrt;
-using std:: acos;
-using std::atan2;
+using std::vector;
 
+// ====================================================================
+// SCHWEBENDE HINDERNISBOX
+//
+// Ein FloatingBox ist ein Body mit Grundposition, sanfter Auf-und-Ab-
+// Bewegung (Sinus) und langsamer Rotation um die Y-Achse. Der Radius ist
+// die maximale Entfernung eines Vertices vom Ursprung (Bounding-Sphere-
+// Radius) und dient als schneller Vorab-Test.
+//
+// Die Darstellung (Farbe, Linienbreite) erfolgt ueber den ShapeStyle beim
+// Zeichnen (DrawMesh) — nicht im Body selbst.
+//
+// Definition: vehicle.cpp
+// ====================================================================
+struct FloatingBox {
+    Body body;
+    Vec3 base;
+    double phase;
+    double spin;
+    double radius; // Bounding-Sphere-Radius (max. Vertex-Laenge)
+
+    // FloatingBox erstellt eine schwebende Hindernis-Box aus einem Body
+    // (analog zu Vehicle). phase: Phasenversatz des Schwebens,
+    // spin: Rotationsgeschwindigkeit.
+    FloatingBox(const Body& b, double phase, double spin);
+
+    // update animiert die Box (Schweben + Rotation). t ist die Zeit in
+    // Sekunden.
+    void update(double t);
+};
+
+// ====================================================================
+// VEHICLE (BOID)
+//
+// Ein Vehicle ist ein Body mit Geschwindigkeit/Beschleunigung samt den
+// Flocking-Regeln (separate, align, cohesion) sowie Ausweichen vor den
+// Hindernissen (avoidObstacles) und Reflexion an den Weltgrenzen
+// (applyBoundary).
+//
+// Definition: vehicle.cpp
+// ====================================================================
 struct Vehicle {
     Body body;
     Vec3 vel{};
@@ -16,43 +56,37 @@ struct Vehicle {
     double health = 1.0;
     array<double, 4> dna{};
 
-    Vehicle(const Body& b) : body{b} {}
+    Vehicle(const Body& b);
 
-    // AlignToVelocity richtet den Body an der Geschwindigkeit aus.
-    void alignToVelocity() {
-        double mag = sqrt(vel.x * vel.x + vel.y * vel.y + vel.z * vel.z);
-        if (mag < 0.0001) {
-            return;
-        }
+    // alignToVelocity richtet den Body an der Geschwindigkeit aus.
+    void alignToVelocity();
 
-        double magXZ = sqrt(vel.x * vel.x + vel.z * vel.z);
+    // applyForce addiert eine Kraft zur Beschleunigung.
+    void applyForce(Vec3 force);
 
-        // vel.Y/mag muss in [-1,1] liegen (Schutz vor NaN durch Float-Rundung)
-        double cosY = Constrain(vel.y / mag, -1.0, 1.0);
-        body.rotX = acos(cosY);
-        if (magXZ < 0.0001) {
-            body.rotY = 0.0;
-        } else {
-            body.rotY = atan2(vel.x / magXZ, vel.z / magXZ);
-        }
-        body.rotZ = 0.0;
+    // update integriert die Bewegung und begrenzt die Geschwindigkeit.
+    void update();
 
-        heading = Vec3{vel.x / mag, vel.y / mag, vel.z / mag};
-    }
+    // seek steuert das Fahrzeug in Richtung eines Ziels.
+    void seek(Vec3 target);
 
-    // ApplyForce addiert eine Kraft zur Beschleunigung.
-    void applyForce(Vec3 force) {
-	    accel = accel.Add(force);
-    }
+    // align gleicht die eigene Geschwindigkeit an die der Nachbarn an
+    // (Flocking-Regel: Alignment).
+    void align(const vector<Vehicle>& vehics);
 
-    // Update integriert die Bewegung und begrenzt die Geschwindigkeit.
-    void Update() {
-        vel = vel.Add(accel);
-        double speed = vel.Length();
-        vel = vel.Normalize().Scale(Constrain(speed, 0.5, 2.0));
-        accel = Vec3{};
-        body.pos = body.pos.Add(vel);
-    }
+    // separate haelt Abstand zu den Nachbarn (Flocking-Regel: Separation).
+    void separate(const vector<Vehicle>& vehics);
+
+    // cohesion steuert in Richtung des Schwerpunkts der Nachbarn
+    // (Flocking-Regel: Kohaesion).
+    void cohesion(const vector<Vehicle>& vehics);
+
+    // avoidObstacles laesst das Vehicle den schwebenden Boxen per Steering
+    // ausweichen (siehe Detailkommentar in vehicle.cpp). margin ist die
+    // letzte Absicherung, detect der Vorausschau-Radius.
+    void avoidObstacles(const vector<FloatingBox>& obstacles, double margin,
+                        double detect);
+
+    // applyBoundary reflektiert die Geschwindigkeit an den Weltgrenzen.
+    void applyBoundary();
 };
-
-

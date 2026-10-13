@@ -14,11 +14,12 @@ Bibliothek `lib/lib3d.a` und linkt daraus die Anwendungen in `apps/`.
 ├── lib/              Ziel der statischen Bibliothek
 │   ├── lib3d.a       erzeugte statische Bibliothek (ignoriert von git)
 │   └── src/          alle Quellen (*.cpp) und Header (*.hpp) der Bibliothek
-├── apps/             Anwendungen, je App ein Unterordner mit main.cpp
+├── apps/             Anwendungen, je App ein Unterordner
+│   ├── boids/        main.cpp + vehicle.hpp/vehicle.cpp (mehrere Quellen)
+│   ├── ray/main.cpp
 │   ├── vorlage/main.cpp
 │   ├── beispiel/main.cpp
-│   ├── instanzen/main.cpp
-│   └── ray/main.cpp
+│   └── instanzen/main.cpp
 ├── tests/            Unit-Test der Bibliothek
 │   └── lib3d_test.cpp
 ├── build/            Objektdateien (*.o) – Zwischenerzeugnisse
@@ -27,9 +28,11 @@ Bibliothek `lib/lib3d.a` und linkt daraus die Anwendungen in `apps/`.
 
 Die Bibliothek wird aus **allen** `lib/src/*.cpp` gebaut. Eine neue
 Quelldatei muss also nur in `lib/src/` abgelegt werden – das `Makefile`
-findet sie automatisch über eine Wildcard. Dasselbe gilt für neue Apps:
-Ein Unterordner in `apps/` mit `main.cpp` genügt, sofern der App-Name in
-`APP_NAMES` im Makefile ergänzt wird (siehe unten).
+findet sie automatisch über eine Wildcard. Dasselbe gilt für Apps:
+**alle** `apps/<name>/*.cpp` werden kompiliert und gemeinsam gelinkt. Ein
+App-Ordner darf also neben `main.cpp` weitere Quellen (und Header) enthalten;
+vorausgesetzt ist nur, dass der App-Name in `APP_NAMES` im Makefile steht
+(siehe unten).
 
 ## Voraussetzungen
 
@@ -52,7 +55,9 @@ Ein Unterordner in `apps/` mit `main.cpp` genügt, sofern der App-Name in
 | `make test` | Baut den Unit-Test und führt ihn aus. |
 | `make clean` | Löscht `build/`, `bin/` und `lib/lib3d.a`. |
 
-Verfügbare App-Namen: `vorlage`, `beispiel`, `instanzen`, `ray`.
+Verfügbare App-Namen (aus `APP_NAMES` im Makefile): `boids`, `ray`.
+Weitere Ordner in `apps/` (z. B. `vorlage`, `beispiel`, `instanzen`) sind
+Vorlagen und werden erst gebaut, wenn ihr Name in `APP_NAMES` ergänzt wird.
 
 ### Beispiele
 
@@ -76,18 +81,26 @@ Fehlermeldung mit der Liste der verfügbaren Apps aus.
    `build/lib/<name>.o` (kompiliert mit `-Ilib/src`). Anschließend werden
    alle Objekte mit `ar rcs lib/lib3d.a …` zur statischen Bibliothek
    archiviert.
-2. **Apps:** Für jede `apps/<name>/main.cpp` entsteht
-   `build/apps/<name>/main.o`. Gelinkt wird mit dem App-Objekt **zuerst**
-   und der Bibliothek danach, damit der Linker die benötigten Symbole
-   findet:
+2. **Apps:** Für **jede** `apps/<name>/*.cpp` entsteht eine Objektdatei,
+   z. B. `build/apps/boids/main.o` und `build/apps/boids/vehicle.o`.
+   Gelinkt werden **alle** Objekte der App **zuerst** und die Bibliothek
+   danach, damit der Linker die benötigten Symbole findet:
 
    ```bash
-   g++ build/apps/<name>/main.o lib/lib3d.a -o bin/<name> -lglfw -lGL
+   g++ build/apps/<name>/main.o build/apps/<name>/<weitere>.o \
+       lib/lib3d.a -o bin/<name> -lglfw -lGL
    ```
 
    Links von statischen Bibliotheken müssen nach den Objekten stehen –
-   daher die Reihenfolge `main.o` → `lib3d.a` → Systembibliotheken.
-3. **Header:** Header und Quellen liegen gemeinsam in `lib/src/`. Der
+   daher die Reihenfolge App-Objekte → `lib3d.a` → Systembibliotheken.
+3. **Header-Abhängigkeiten:** Beim Übersetzen erzeugt der Compiler mit
+   `-MMD -MP` zu jeder Objektdatei eine `.d`-Datei (z. B.
+   `build/apps/boids/vehicle.d`), die die eingebundenen Header auflistet.
+   Das Makefile bindet diese `.d`-Dateien am Ende ein (`-include $(DEPS)`),
+   sodass eine Änderung an einem Header (z. B. `vehicle.hpp`) automatisch
+   das Neuübersetzen aller davon abhängigen Objekte auslöst. Nach einem
+   `make clean` werden die `.d`-Dateien beim ersten Build neu erzeugt.
+4. **Header:** Header und Quellen liegen gemeinsam in `lib/src/`. Der
    Include-Pfad wird über `-Ilib/src` gesetzt, daher lautet das Einbinden
    in Apps und Tests:
 
@@ -114,6 +127,12 @@ Fehlermeldung mit der Liste der verfügbaren Apps aus.
 2. Im Makefile in der Zeile `APP_NAMES := …` den Namen ergänzen.
 3. Bauen mit `make apps`, starten mit `make run APP=<name>` bzw.
    `make run-<name>`.
+
+Optional können im App-Ordner weitere `.cpp`-Dateien (z. B. `vehicle.cpp`)
+und passende Header (`.hpp`) liegen. Sie werden automatisch mitkompiliert
+und gelinkt – es muss nur der App-Ordner selbst in `APP_NAMES` stehen. Für
+Header innerhalb der App genügt das Einbinden mit dem reinen Dateinamen
+(`#include "vehicle.hpp"`).
 
 ## Hinweise
 
