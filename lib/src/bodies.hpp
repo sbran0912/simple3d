@@ -62,9 +62,9 @@ ClosestFaceHit ClosestPointToFace(const Vec3& p, const Face& face);
 // + Transform. Darstellungsdaten (Farbe, Linienbreite) gehoeren nicht
 // hierher, sondern in den ShapeStyle beim Zeichnen (DrawMesh).
 struct Body {
-    Mesh Geometry;      // Zeichengeometrie (lokal)
-    vector<Face> Faces; // lokale Faces (inkl. Normalen)
-    Vec3 Pos;
+    Mesh geometry;      // Zeichengeometrie (lokal)
+    vector<Face> faces; // lokale Faces (inkl. Normalen)
+    Vec3 pos;
     double RotX = 0;
     double RotY = 0;
     double RotZ = 0;

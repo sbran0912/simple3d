@@ -174,7 +174,7 @@ ClosestFaceHit ClosestPointToFace(const Vec3& p, const Face& face) {
 // ====================================================================
 
 Matrix4x4 Body::ModelMatrix() const {
-    const Matrix4x4 t = TranslateMatrix(Pos.X, Pos.Y, Pos.Z);
+    const Matrix4x4 t = TranslateMatrix(pos.X, pos.Y, pos.Z);
     if (RotX == 0 && RotY == 0 && RotZ == 0) {
         return t;
     }
@@ -182,15 +182,15 @@ Matrix4x4 Body::ModelMatrix() const {
 }
 
 vector<Face> Body::WorldFaces() const {
-    return TransformFaces(Faces, ModelMatrix());
+    return TransformFaces(faces, ModelMatrix());
 }
 
 Body MakeBody(const Mesh& geometry, const Vec3& pos, double rotX,
               double rotY, double rotZ) {
     Body b;
-    b.Geometry = geometry;
-    b.Faces = BuildFaces(b.Geometry);
-    b.Pos = pos;
+    b.geometry = geometry;
+    b.faces = BuildFaces(b.geometry);
+    b.pos = pos;
     b.RotX = rotX;
     b.RotY = rotY;
     b.RotZ = rotZ;

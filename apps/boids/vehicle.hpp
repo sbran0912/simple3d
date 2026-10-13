@@ -19,7 +19,7 @@ struct Vehicle {
     Vehicle(const Body& b) : body{b} {}
 
     // AlignToVelocity richtet den Body an der Geschwindigkeit aus.
-    void AlignToVelocity() {
+    void alignToVelocity() {
         double mag = sqrt(vel.X * vel.X + vel.Y * vel.Y + vel.Z * vel.Z);
         if (mag < 0.0001) {
             return;
@@ -39,4 +39,21 @@ struct Vehicle {
 
         heading = Vec3{vel.X / mag, vel.Y / mag, vel.Z / mag};
     }
+
+    // ApplyForce addiert eine Kraft zur Beschleunigung.
+    void applyForce(Vec3 force) {
+	    accel = accel.Add(force);
+    }
+
+    // Update integriert die Bewegung und begrenzt die Geschwindigkeit.
+    void Update() {
+        vel = vel.Add(accel);
+        double speed = vel.Length();
+        vel = vel.Normalize().Scale(Constrain(speed, 0.5, 2.0));
+        accel = Vec3{};
+        body.pos = body.pos.Add(vel);
+    }
+
 };
+
+

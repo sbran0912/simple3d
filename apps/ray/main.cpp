@@ -122,7 +122,7 @@ int main() {
         // Alle Bodies zeichnen (Mesh einmal erzeugt, Modell-Matrix explizit,
         // Linienbreite kommt aus dem ShapeStyle).
         for (const auto& b : bodies) {
-            DrawMesh(b.Object.Geometry, BodyStyle(b.Color, b.LineWidth),
+            DrawMesh(b.Object.geometry, BodyStyle(b.Color, b.LineWidth),
                      b.Object.ModelMatrix());
         }
 
