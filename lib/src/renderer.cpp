@@ -697,7 +697,7 @@ void SetLightDirection(double x, double y, double z) {
     glUniform3f(locLightDir, static_cast<float>(x), static_cast<float>(y), static_cast<float>(z));
 }
 
-void Init(int w, int h) {
+void Init() {
     if (!glfwInit()) {
         throw runtime_error("glfwInit fehlgeschlagen");
     }
@@ -708,23 +708,20 @@ void Init(int w, int h) {
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
     glfwWindowHint(GLFW_SAMPLES, 4);
 
-    // Vollbild (exklusiv): Fenster auf dem primaeren Monitor in dessen aktuellem
-    // Video-Modus erzeugen. Ist kein Monitor verfuegbar (z. B. Wayland-Test),
-    // faellt es auf ein normales Fenster mit der uebergebenen Groesse zurueck.
+    // Exklusives Vollbild: Fenster auf dem primaeren Monitor in dessen aktuellem
+    // Video-Modus erzeugen. Ohne Monitor/Videomodus gibt es keinen Fallback,
+    // das Programm bricht ab.
     GLFWmonitor* monitor = glfwGetPrimaryMonitor();
     const GLFWvidmode* mode = monitor != nullptr ? glfwGetVideoMode(monitor) : nullptr;
-
-    int winW = w;
-    int winH = h;
-    if (mode != nullptr) {
-        winW = mode->width;
-        winH = mode->height;
+    if (mode == nullptr) {
+        glfwTerminate();
+        throw runtime_error("Kein Monitor fuer den exklusiven Vollbildmodus verfuegbar");
     }
 
     // Der 5. Parameter ist das Share-Fenster (hier: keins). Bei gesetztem
     // Monitor waehlt GLFW den zum Wunschformat naechstgelegenen Video-Modus,
-    // bei winW/winH = aktuelle Monitoraufloesung also den Desktop-Modus.
-    window = glfwCreateWindow(winW, winH, "3D Renderer", monitor, nullptr);
+    // bei mode->width/mode->height also den aktuellen Desktop-Modus.
+    window = glfwCreateWindow(mode->width, mode->height, "3D Renderer", monitor, nullptr);
     if (window == nullptr) {
         glfwTerminate();
         throw runtime_error("Fenster konnte nicht erstellt werden");
@@ -786,14 +783,12 @@ void Init(int w, int h) {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_PROGRAM_POINT_SIZE);
 
-    // Groesse/Viewport aus dem tatsaechlichen Framebuffer uebernehmen. Im
-    // Vollbild weicht die Aufloesung von der an Init uebergebenen ab.
+    // Groesse/Viewport aus dem tatsaechlichen Framebuffer uebernehmen.
+    // Eine ungueltige Framebuffer-Groesse ist ein Fehler (kein Fallback).
     glfwGetFramebufferSize(window, &frameW, &frameH);
-    if (frameW <= 0) {
-        frameW = winW;
-    }
-    if (frameH <= 0) {
-        frameH = winH;
+    if (frameW <= 0 || frameH <= 0) {
+        glfwTerminate();
+        throw runtime_error("Ungueltige Framebuffer-Groesse");
     }
     glViewport(0, 0, frameW, frameH);
     startTime = glfwGetTime();

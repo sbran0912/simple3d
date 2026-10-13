@@ -141,9 +141,11 @@ void SetFog(double near, double far, double r, double g, double b, double a);
 // Kamerakoordinaten (zeigt vom Fragment ZUR Lichtquelle).
 void SetLightDirection(double x, double y, double z);
 
-// Init initialisiert Fenster, OpenGL-Kontext, Shader und Batch-Zustand.
-// Wirft runtime_error bei Fehlern.
-void Init(int w, int h);
+// Init initialisiert das Fenster im exklusiven Vollbild (aktuelle
+// Monitoraufloesung), den OpenGL-Kontext, Shader und Batch-Zustand.
+// Wirft runtime_error, wenn kein Monitor/Videomodus verfuegbar ist oder ein
+// Fehler auftritt (kein Fenster-Fallback).
+void Init();
 
 // StartAnimation startet die Animations-Schleife.
 void StartAnimation(const function<void()>& fnDraw);

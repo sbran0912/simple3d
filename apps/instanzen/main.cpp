@@ -21,9 +21,6 @@ using std::vector;
 // ====================================================================
 
 int main() {
-    const int screenW = 1200;
-    const int screenH = 800;
-
     Scene scene;
     scene.Cam.Pos    = {120, 240, 460};
     scene.Cam.Target = {0, 0, 0};
@@ -156,7 +153,7 @@ int main() {
 
     /* Start */
     try {
-        Init(screenW, screenH);
+        Init();
     } catch (const exception& e) {
         fprintf(stderr, "%s\n", e.what());
         return 1;

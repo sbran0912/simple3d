@@ -16,8 +16,6 @@ using std::printf;
 // ====================================================================
 
 int main() {
-    const int screenW = 1200;
-    const int screenH = 800;
     Scene scene;
 
     const PrimitiveStyle gridStyle{
@@ -80,7 +78,7 @@ int main() {
 
     /* Start */
     try {
-        Init(screenW, screenH);
+        Init();
     } catch (const exception& e) {
         fprintf(stderr, "%s\n", e.what());
         return 1;

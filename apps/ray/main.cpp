@@ -65,8 +65,6 @@ struct SceneBody {
 };
 
 int main() {
-    const int screenW = 1600;
-    const int screenH = 1000;
     const int coneLines = 20;
     const double camHeight = 140;
 
@@ -180,7 +178,7 @@ int main() {
 
     /* Start */
     try {
-        Init(screenW, screenH);
+        Init();
     } catch (const exception& e) {
         fprintf(stderr, "%s\n", e.what());
         return 1;

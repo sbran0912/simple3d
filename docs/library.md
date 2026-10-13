@@ -32,7 +32,7 @@ int main() {
     };
 
     try {
-        Init(1200, 800);                // Fenster + GL-Kontext + Shader
+        Init();                         // Vollbild + GL-Kontext + Shader
     } catch (const exception& e) {
         return 1;
     }
@@ -49,7 +49,7 @@ gesammelten Zeichenbefehle (`FlushBatch`). Man zeichnet also *nur* über die
 
 | Funktion | Bedeutung |
 | --- | --- |
-| `Init(int w, int h)` | Fenster, OpenGL-Kontext, Shader, Batch-Zustand. Wirft `runtime_error`. |
+| `Init()` | Exklusives Vollbild, OpenGL-Kontext, Shader, Batch-Zustand. Wirft `runtime_error`. |
 | `StartAnimation(const function<void()>& draw)` | Startet die Schleife; `draw` wird jedes Frame aufgerufen. |
 | `NoLoop()` | Beendet die Animations-Schleife. |
 | `GetWidth()` / `GetHeight()` | Fenstergröße in Pixeln. |
@@ -511,7 +511,7 @@ int main() {
         (void)c;
     };
 
-    try { Init(1200, 800); } catch (const exception&) { return 1; }
+    try { Init(); } catch (const exception&) { return 1; }
     SetBatchSort(true);
     StartAnimation(draw);
     return 0;
