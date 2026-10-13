@@ -198,11 +198,46 @@ void Polygon(const vector<double>& pts, DrawStyle style,
 
 // Camera buendelt die perspektivischen Parameter und die Blickrichtung.
 struct Camera {
+    // Pos: Position der Kamera in WELTkoordinaten (Augpunkt). Von hier aus
+    // wird die Szene betrachtet. Zusammen mit Target bestimmt sie die
+    // Blickrichtung forward = normalize(Target - Pos). BeginScene uebergibt
+    // Pos an LookAtMatrix. ACHTUNG: Pos darf nicht gleich Target sein, sonst
+    // ist forward = 0 und die View-Matrix entartet.
     Vec3 Pos{50, 100, 200};
+    // Target: Punkt in WELTkoordinaten, auf den die Kamera blickt (Ziel- bzw.
+    // Fixpunkt). Er definiert nur die Richtung, nicht die Entfernung - die
+    // Kamera "steht" in Pos, nicht in Target. Typisch ist der Szenenmittel-
+    // punkt, z.B. {0,0,0}. Fuer eine Orbit-Kamera bleibt Target fest und nur
+    // Pos wandert auf einem Kreis darum herum.
     Vec3 Target{0, 0, 0};
+    // Up: Referenz-"Oben"-Vektor der Kamera in WELTkoordinaten. Er legt fest,
+    // wohin die Y-Achse des Bildes zeigt (also ob das Bild aufrecht steht oder
+    // verdreht/gekippt ist). Er muss NICHT senkrecht auf der Blickrichtung
+    // stehen: LookAtMatrix bildet aus forward = Target-Pos und Up zuerst
+    // right = forward x Up und daraus realUp = right x forward. Dadurch wird
+    // Up automatisch orthonormalisiert (Gram-Schmidt). Typisch ist {0,1,0}
+    // ("Welt-Y ist oben"). ACHTUNG: Up darf nicht parallel zur Blickrichtung
+    // sein, sonst wird right = 0 und die Normalisierung entartet.
     Vec3 Up{0, 1, 0};
+    // FovY: vertikales Blickfeld ("field of view") in RADIANT, nicht Grad.
+    // Geht als fovY in PerspectiveMatrix ein: f = 1/tan(FovY/2). Kleiner Wert
+    // = Teleobjektiv (enger Ausschnitt, Objekte wirken groesser/nah), grosser
+    // Wert = Weitwinkel (mehr Szene sichtbar, Objekte wirken kleiner/weiter
+    // weg). Default 1.2 rad ~ 68.8 Grad. Das horizontale Fov ergibt sich aus
+    // FovY und dem Fenster-Seitenverhaeltnis (aspect = Breite/Hoehe).
     double FovY = 1.2;
+    // Near: Abstand der vorderen Clipping-Ebene in Kamerakoordinaten (entlang
+    // der Blickrichtung, immer positiv). Alles naeher als Near wird
+    // weggeschnitten. Bestimmt zusammen mit Far die Tiefenpraezision des
+    // Z-Buffers: je groesser Far/Near, desto groesser die Gefahr von
+    // Z-Fighting. Ausserdem muss Near > 0 sein (bei 0 wird die
+    // Projektionsmatrix singulaer). Default 0.1.
     double Near = 0.1;
+    // Far: Abstand der hinteren Clipping-Ebene in Kamerakoordinaten. Alles
+    // weiter als Far entfernt wird weggeschnitten. Muss > Near sein. Wichtig:
+    // Far begrenzt die sichtbare Tiefe unabhaengig vom Nebel (sceneFog.Far) -
+    // Objekte hinter Far fehlen komplett, statt nur ausgenebelt zu werden.
+    // Default 1000.
     double Far  = 1000;
 
     // Reine Mathe -> inline im Header.
@@ -223,6 +258,10 @@ struct Fog {
 // Scene buendelt Kamera + Welt-Attribute (Licht, Nebel, Hintergrund).
 // Farb-/Graustufenwerte sind hier als ColorState (0..1) hinterlegt.
 struct Scene {
+    // Cam: Kamera der Szene (Position, Blickziel, Up-Vektor, FovY, Near, Far).
+    // Wird von BeginScene via ApplyCamera gesetzt. ACHTUNG: Wer Cam.Pos pro
+    // Frame selbst zuweist (z.B. fuer eine Orbit-Kamera), ueberschreibt damit
+    // diesen Startwert - er ist dann nur der Initialwert vor dem ersten Frame.
     Camera Cam{
         .Pos = {50, 100, 200},
         .Target = {0, 0, 0},
@@ -231,15 +270,23 @@ struct Scene {
         .Near = 0.1,
         .Far = 1000
     };
+    // SunDir: Richtung der Sonne in WELTkoordinaten (zeigt von der Flaeche
+    // ZUR Lichtquelle). BeginScene transformiert sie mit der View-Matrix in
+    // Kamerakoordinaten und ruft damit SetLightDirection auf. Bestimmt das
+    // Flat-Shading; muss nicht normalisiert sein.
     Vec3 SunDir{0.5, 1.0, 0.3};
+    // sceneFog: Tiefen-Nebel. Enabled == false -> kein Nebel. Near/Far sind
+    // Distanzen in Kamerakoordinaten (Beginn bzw. Ende des Uebergangs),
+    // Color ist die Nebelfarbe (RGBA, 0..1). BeginScene ruft damit SetFog auf.
     Fog sceneFog{
         .Enabled = true,
         .Near = 100,
         .Far = 400,
         .Color = {0.25, 0.25, 0.25, 1}
     };
+    // Background: Fuellfarbe des Fensters vor dem Zeichnen (RGBA, 0..1).
+    // BeginScene ruft damit Background() auf.
     ColorState Background{40 / 255.0, 40 / 255.0, 40 / 255.0, 1};
-    bool BatchSort = false;
 };
 
 // ApplyCamera setzt View + Projection (Aspect aus GetWidth/GetHeight).

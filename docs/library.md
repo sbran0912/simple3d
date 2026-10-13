@@ -117,9 +117,9 @@ pro Zeichenaufruf als Argument übergeben (kein globaler Modell-Zustand).
 
 ```cpp
 struct Camera {
-    Vec3   Pos{50, 100, 200};   // Kameraposition
-    Vec3   Target{0, 0, 0};     // Blickpunkt
-    Vec3   Up{0, 1, 0};         // Oben-Vektor
+    Vec3   Pos{50, 100, 200};   // Augpunkt (Weltkoordinaten)
+    Vec3   Target{0, 0, 0};     // Blickziel (Weltkoordinaten)
+    Vec3   Up{0, 1, 0};         // Oben-Vektor (Weltkoordinaten)
     double FovY = 1.2;          // vertikales Sichtfeld (Bogenmaß)
     double Near = 0.1;          // nahe Clipping-Ebene
     double Far  = 1000;         // ferne Clipping-Ebene
@@ -128,11 +128,10 @@ struct Camera {
 };
 
 struct Scene {
-    Camera     Cam;
+    Camera     Cam;                         // Kamera (s. u.)
     Vec3       SunDir{0.5, 1.0, 0.3};       // Lichtrichtung (Weltraum)
-    Fog        Fog_;                        // Tiefen-Nebel
+    Fog        sceneFog;                    // Tiefen-Nebel
     ColorState Background{40/255.0, 40/255.0, 40/255.0, 1};
-    bool       BatchSort = false;           // Batch sortieren (s. u.)
 };
 
 struct Fog {
@@ -143,8 +142,69 @@ struct Fog {
 };
 ```
 
+### 2.1 Die Attribute von `Camera`
+
+`Pos` und `Target` bilden ein **Paar** – einzeln sind sie bedeutungslos. Die
+Kamera schaut immer von `Pos` nach `Target`:
+
+$$\vec{f} = \frac{\text{Target} - \text{Pos}}{\lVert \text{Target} - \text{Pos} \rVert}$$
+
+| Attribut | Einheit | Bedeutung | Muss-Bedingung |
+|---|---|---|---|
+| `Pos` | Weltkoordinaten | Augpunkt: Position der Kamera. Von hier aus wird die Szene betrachtet. | `Pos != Target` |
+| `Target` | Weltkoordinaten | Blickziel: Punkt, auf den die Kamera blickt. Legt **nur die Richtung** fest, nicht die Entfernung. | `Pos != Target` |
+| `Up` | Weltkoordinaten | Referenz-„Oben"-Vektor: bestimmt, wohin die Y-Achse des Bildes zeigt (aufrecht oder gekippt). | nicht parallel zu `Target - Pos` |
+| `FovY` | **Bogenmaß** | Vertikales Blickfeld. Klein = Tele (enger Ausschnitt), groß = Weitwinkel. | `0 < FovY < π` |
+| `Near` | Kamera-Einheiten | Vordere Clipping-Ebene: alles Nähere wird weggeschnitten. | `Near > 0` |
+| `Far` | Kamera-Einheiten | Hintere Clipping-Ebene: alles Weiterentfernte wird weggeschnitten. | `Far > Near` |
+
+**`Pos` und `Target`:** `Target` ist **keine Position**, sondern nur eine
+Richtungsangabe. Die Kamera „steht" in `Pos`; die Entfernung
+`|Target - Pos|` beeinflusst lediglich die Hebelwirkung kleiner `Target`-
+Änderungen auf die Blickrichtung. Für eine **Orbit-Kamera** bleibt `Target`
+fest (typisch der Szenenmittelpunkt, z. B. `{0,0,0}`) und nur `Pos` wandert
+auf einem Kreis darum herum.
+
+**`Up`:** Muss **nicht** senkrecht auf der Blickrichtung stehen. `LookAtMatrix`
+orthonormalisiert automatisch (Gram-Schmidt):
+
+```cpp
+const Vec3 forward = target.Sub(cameraPos).Normalize();
+const Vec3 right   = forward.Cross(up).Normalize();
+const Vec3 realUp  = right.Cross(forward);
+```
+
+`Up` dient also nur als Referenz; das tatsächliche Kamera-Oben ist `realUp`.
+Typisch ist `{0,1,0}` („Welt-Y ist oben"). **Achtung:** `Up` darf nicht
+parallel zur Blickrichtung sein, sonst wird `right = 0` und die Normalisierung
+entartet.
+
+**`FovY`:** Wird als `fovY` an `PerspectiveMatrix` übergeben, das intern
+`f = 1/tan(FovY/2)` rechnet – daher **Bogenmaß, nicht Grad**. Der Default
+`1.2 rad` entspricht ca. `68.8°`. Das horizontale Sichtfeld ergibt sich aus
+`FovY` und dem Fenster-Seitenverhältnis (`aspect = Breite/Höhe`).
+
+**`Near` / `Far`:** Beide sind Abstände in Kamerakoordinaten entlang der
+Blickrichtung. Sie bestimmen zusammen die Tiefenpräzision des Z-Buffers: je
+größer das Verhältnis `Far/Near`, desto größer die Gefahr von Z-Fighting.
+`Near` muss `> 0` sein, da die Projektionsmatrix sonst singulär wird. `Far`
+begrenzt die sichtbare Tiefe **unabhängig vom Nebel** (`sceneFog.Far`):
+Objekte hinter `Far` fehlen komplett, statt nur ausgenebelt zu werden.
+
+### 2.2 Die Attribute von `Scene`
+
+| Attribut | Bedeutung |
+|---|---|
+| `Cam` | Kamera der Szene. Wird von `BeginScene` via `ApplyCamera` gesetzt. **Achtung:** Wer `Cam.Pos` pro Frame selbst zuweist (Orbit-Kamera), überschreibt damit den Startwert – er gilt dann nur vor dem ersten Frame. |
+| `SunDir` | Richtung der Sonne in **Weltkoordinaten** (zeigt von der Fläche *zur* Lichtquelle). `BeginScene` transformiert sie mit der View-Matrix in Kamerakoordinaten und ruft `SetLightDirection` auf. Bestimmt das Flat-Shading; muss nicht normalisiert sein. |
+| `sceneFog` | Tiefen-Nebel. `Enabled == false` → kein Nebel. `Near`/`Far` sind Distanzen in Kamerakoordinaten (Beginn bzw. Ende des Übergangs), `Color` ist die Nebelfarbe (RGBA, 0..1). `BeginScene` ruft damit `SetFog` auf. |
+| `Background` | Füllfarbe des Fensters vor dem Zeichnen (RGBA, 0..1). `BeginScene` ruft damit `Background()` auf. |
+
+> **Hinweis:** Das Sortieren der Batch ist **kein** Feld von `Scene`, sondern
+> wird direkt über `SetBatchSort(bool)` gesteuert (siehe unten).
+
 - `BeginScene(const Scene&)` – pro Frame aufrufen. Setzt Hintergrund, (falls
-  `Fog_.Enabled`) Nebel, Kamera (`ApplyCamera`) und die Sonnenrichtung in
+  `sceneFog.Enabled`) Nebel, Kamera (`ApplyCamera`) und die Sonnenrichtung in
   Kamerakoordinaten.
 - `ApplyCamera(const Camera&)` – setzt View + Projection (Aspect aus
   `GetWidth/GetHeight`), ohne Hintergrund/Nebel/Licht.
@@ -488,7 +548,7 @@ int main() {
     Scene scene;
     scene.Cam.Pos = {50, 100, 200};
     scene.SunDir  = {0.5, 1.0, 0.3};
-    scene.Fog_    = {true, 100, 400, ColorState{0.25, 0.25, 0.25, 1}};
+    scene.sceneFog = {true, 100, 400, ColorState{0.25, 0.25, 0.25, 1}};
 
     const ShapeStyle ballStyle{
         .stroke = ColorInput("#2f3a00"),
@@ -535,6 +595,12 @@ Weitere vollständige Beispiele liegen unter `apps/`:
   vorher aus (nicht mitten im Frame aufrufen, außer gewollt).
 - **`SetBatchSort(true)`** nur für opake Geometrie (ändert die
   Zeichenreihenfolge; Blending wäre dann nicht korrekt sortiert).
+- **Kamera:** `Target` ist nur eine Richtungsangabe, keine Position – die
+  Kamera steht in `Pos`. `FovY` ist in **Bogenmaß** anzugeben. `Near` muss
+  `> 0` sein, `Far > Near`. `Up` darf nicht parallel zur Blickrichtung sein.
+- **Clipping vs. Nebel:** `Camera::Far` schneidet Geometrie hart ab, während
+  `sceneFog.Far` sie nur ausnebelt. Bei weit entfernter Kamera zuerst `Far`
+  prüfen, dann den Nebel.
 - **Meshes wiederverwenden:** Geometrie einmal erzeugen und über alle
   Frames/Instanzen teilen – nicht pro Frame neu bauen.
 - **Body vs. Mesh:** Renderdaten (Farbe/Linienbreite) gehören in den

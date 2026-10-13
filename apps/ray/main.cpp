@@ -69,15 +69,9 @@ int main() {
     const double camHeight = 140;
 
     Scene scene;
-    scene.Cam.Target = {0, 0, 0};
-    scene.Cam.Up     = {0, 1, 0};
-    scene.Cam.FovY   = 1.2;
-    scene.Cam.Near   = 0.1;
-    scene.Cam.Far    = 1000;
-    scene.SunDir     = {1, 0, 0};
     scene.sceneFog       = {true, 100, 600, ColorState{0.25, 0.25, 0.25, 1}};
 
-    const double camRadius = sqrt(40 * 40 + 180 * 180);
+    const double camRadius = sqrt(80 * 80 + 360 * 360); // Kamera weiter entfernt
     double timeAccum = 0;
     double coneRotY = 0;
     int frameCount = 0;
@@ -116,11 +110,13 @@ int main() {
         }
 
         const double camAngle = timeAccum * 0.15;
+        
         scene.Cam.Pos = {
             sin(camAngle) * camRadius,
             camHeight,
             cos(camAngle) * camRadius,
         };
+
         BeginScene(scene);
 
         // Alle Bodies zeichnen (Mesh einmal erzeugt, Modell-Matrix explizit,
