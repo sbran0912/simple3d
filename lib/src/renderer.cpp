@@ -647,7 +647,7 @@ void BeginScene(const Scene& scene) {
     }
     ApplyCamera(scene.Cam);
     const Vec3 camLight = scene.SunDir.TransformDir(scene.Cam.View());
-    SetLightDirection(camLight.X, camLight.Y, camLight.Z);
+    SetLightDirection(camLight.x, camLight.y, camLight.z);
 }
 
 int GetPendingDrawCalls() { return static_cast<int>(batchCmds.size()); }

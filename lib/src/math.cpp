@@ -21,8 +21,8 @@ mt19937& rng() {
 } // namespace
 
 Vec2 Project(double fov, const Vec3& v) {
-    const double s = fov / (fov + v.Z);
-    return Vec2{v.X * s, v.Y * s, s};
+    const double s = fov / (fov + v.z);
+    return Vec2{v.x * s, v.y * s, s};
 }
 
 double Constrain(double value, double lo, double hi) {

@@ -13,15 +13,15 @@ using std::sin;
 namespace {
 
 void AddTri(vector<float>& out, const Vec3& a, const Vec3& b, const Vec3& c) {
-    out.push_back(static_cast<float>(a.X));
-    out.push_back(static_cast<float>(a.Y));
-    out.push_back(static_cast<float>(a.Z));
-    out.push_back(static_cast<float>(b.X));
-    out.push_back(static_cast<float>(b.Y));
-    out.push_back(static_cast<float>(b.Z));
-    out.push_back(static_cast<float>(c.X));
-    out.push_back(static_cast<float>(c.Y));
-    out.push_back(static_cast<float>(c.Z));
+    out.push_back(static_cast<float>(a.x));
+    out.push_back(static_cast<float>(a.y));
+    out.push_back(static_cast<float>(a.z));
+    out.push_back(static_cast<float>(b.x));
+    out.push_back(static_cast<float>(b.y));
+    out.push_back(static_cast<float>(b.z));
+    out.push_back(static_cast<float>(c.x));
+    out.push_back(static_cast<float>(c.y));
+    out.push_back(static_cast<float>(c.z));
 }
 
 // AddQuad trianguliert ein konvexes Viereck als Fächer (a,b,c) + (a,c,d).
@@ -31,12 +31,12 @@ void AddQuad(vector<float>& out, const Vec3& a, const Vec3& b, const Vec3& c, co
 }
 
 void AddLine(vector<float>& out, const Vec3& a, const Vec3& b) {
-    out.push_back(static_cast<float>(a.X));
-    out.push_back(static_cast<float>(a.Y));
-    out.push_back(static_cast<float>(a.Z));
-    out.push_back(static_cast<float>(b.X));
-    out.push_back(static_cast<float>(b.Y));
-    out.push_back(static_cast<float>(b.Z));
+    out.push_back(static_cast<float>(a.x));
+    out.push_back(static_cast<float>(a.y));
+    out.push_back(static_cast<float>(a.z));
+    out.push_back(static_cast<float>(b.x));
+    out.push_back(static_cast<float>(b.y));
+    out.push_back(static_cast<float>(b.z));
 }
 
 } // namespace

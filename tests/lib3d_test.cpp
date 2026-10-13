@@ -46,14 +46,14 @@ static void TestLookAtCameraMapsToOrigin() {
     const auto got = cam.Transform(view);
     EXPECT(got.Equals(Vec3{0, 0, 0}, 1e-9), "Kamera -> Ursprung");
     const auto ahead = Vec3{0, 0, -90}.Transform(view);
-    EXPECT(nearly(ahead.Z, 10, 1e-9), "Punkt vor Kamera z = 10");
+    EXPECT(nearly(ahead.z, 10, 1e-9), "Punkt vor Kamera z = 10");
 }
 
 static void TestPerspectiveClipspace() {
     const auto proj = PerspectiveMatrix(numbers::pi / 4, 1, 0.1, 1000);
     const double near = 0.1;
     const auto v = Vec3{0, 0, near}.Transform(proj);
-    EXPECT(nearly(v.Z / near, -1, 1e-9), "near-Ebene z_clip/w = -1");
+    EXPECT(nearly(v.z / near, -1, 1e-9), "near-Ebene z_clip/w = -1");
 }
 
 static void TestRotateMatrixY() {

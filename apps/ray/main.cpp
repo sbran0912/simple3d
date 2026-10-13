@@ -136,10 +136,10 @@ int main() {
         //Faces debuggen
         for (const auto& f : faces) {
             printf("Face: A=(%.2f, %.2f, %.2f) B=(%.2f, %.2f, %.2f) C=(%.2f, %.2f, %.2f) Normal=(%.2f, %.2f, %.2f)\n",
-           f.A.X, f.A.Y, f.A.Z,
-           f.B.X, f.B.Y, f.B.Z,
-           f.C.X, f.C.Y, f.C.Z,
-           f.Normal.X, f.Normal.Y, f.Normal.Z);
+           f.A.x, f.A.y, f.A.z,
+           f.B.x, f.B.y, f.B.z,
+           f.C.x, f.C.y, f.C.z,
+           f.Normal.x, f.Normal.y, f.Normal.z);
         }
 
         // Lichtkegel rotieren.
@@ -156,18 +156,18 @@ int main() {
         for (int i = 0; i < coneLines; i++) {
             const double a = (2.0 * numbers::pi * i) / coneLines;
             const Vec3 end{
-                apex.X + cos(a) * coneR,
-                apex.Y + sin(a) * coneR,
-                apex.Z + coneZ,
+                apex.x + cos(a) * coneR,
+                apex.y + sin(a) * coneR,
+                apex.z + coneZ,
             };
             const Vec3 rotatedEnd = RotateAround(end, apex, coneRot);
 
             const RayHit hit = RaycastSegment(apex, rotatedEnd, faces);
             const Vec3 endpoint = hit.isHit ? hit.Point : rotatedEnd;
 
-            DrawLine(apex.X, apex.Y, apex.Z, endpoint.X, endpoint.Y, endpoint.Z,
+            DrawLine(apex.x, apex.y, apex.z, endpoint.x, endpoint.y, endpoint.z,
                      PrimitiveStyle{.stroke = ColorInput("#ff8800"), .lineWidth = 1});
-            DrawPoint(endpoint.X, endpoint.Y, endpoint.Z,
+            DrawPoint(endpoint.x, endpoint.y, endpoint.z,
                       PrimitiveStyle{.stroke = ColorInput("#ff0000"), .pointSize = 5});
         }
     };

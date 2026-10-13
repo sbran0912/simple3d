@@ -126,14 +126,14 @@ int main() {
 
         // Instanz-Matrizen aktualisieren: Szene-Rotation * Platzierung * Spin.
         for (size_t i = 0; i < cubePos.size(); i++) {
-            const Matrix4x4 place = TranslateMatrix(cubePos[i].X, cubePos[i].Y, cubePos[i].Z);
+            const Matrix4x4 place = TranslateMatrix(cubePos[i].x, cubePos[i].y, cubePos[i].z);
             const Matrix4x4 spin = RotateMatrix(0, angle * 2.0, 0);
             cubeInstances[i].Model =
                 MultMatrix(MultMatrix(RotateMatrix(0, angle, 0), place), spin);
             cubeInstances[i].Color = cubeCol[i];
         }
         for (size_t i = 0; i < ringPos.size(); i++) {
-            const Matrix4x4 place = TranslateMatrix(ringPos[i].X, ringPos[i].Y, ringPos[i].Z);
+            const Matrix4x4 place = TranslateMatrix(ringPos[i].x, ringPos[i].y, ringPos[i].z);
             ringInstances[i].Model = MultMatrix(RotateMatrix(0, angle, 0), place);
             ringInstances[i].Color = ringCol[i];
         }

@@ -42,7 +42,7 @@ int main() {
         angle += 0.01;
         vehicle.body.pos = Vec3{radius * cos(angle), 0, radius * sin(angle)};
         // Tangential zur Kreisbahn zeigen (in Bewegungsrichtung).
-        vehicle.body.RotY = angle + numbers::pi / 2;
+        vehicle.body.rotY = angle + numbers::pi / 2;
         vehicle.vel = Vec3{-radius * sin(angle), 0, radius * cos(angle)}.Scale(0.01);
         vehicle.alignToVelocity();
         DrawMesh(vehicle.body.geometry, pyramidStyle, vehicle.body.ModelMatrix());

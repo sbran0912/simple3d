@@ -66,7 +66,7 @@ int main() {
 
         // Kugel rotieren lassen: Szene-Rotation * Verschiebung an (0,16,0).
         angle += 0.01;
-        ballBody.RotY = angle;
+        ballBody.rotY = angle;
         DrawMesh(ballBody.geometry, ballStyle, ballBody.ModelMatrix());
     };
 

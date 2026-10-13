@@ -65,9 +65,9 @@ struct Body {
     Mesh geometry;      // Zeichengeometrie (lokal)
     vector<Face> faces; // lokale Faces (inkl. Normalen)
     Vec3 pos;
-    double RotX = 0;
-    double RotY = 0;
-    double RotZ = 0;
+    double rotX = 0;
+    double rotY = 0;
+    double rotZ = 0;
 
     // ModelMatrix ist die Modellmatrix (Translation * Rotation).
     Matrix4x4 ModelMatrix() const;

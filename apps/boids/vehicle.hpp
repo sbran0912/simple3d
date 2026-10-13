@@ -20,24 +20,24 @@ struct Vehicle {
 
     // AlignToVelocity richtet den Body an der Geschwindigkeit aus.
     void alignToVelocity() {
-        double mag = sqrt(vel.X * vel.X + vel.Y * vel.Y + vel.Z * vel.Z);
+        double mag = sqrt(vel.x * vel.x + vel.y * vel.y + vel.z * vel.z);
         if (mag < 0.0001) {
             return;
         }
 
-        double magXZ = sqrt(vel.X * vel.X + vel.Z * vel.Z);
+        double magXZ = sqrt(vel.x * vel.x + vel.z * vel.z);
 
         // vel.Y/mag muss in [-1,1] liegen (Schutz vor NaN durch Float-Rundung)
-        double cosY = Constrain(vel.Y / mag, -1.0, 1.0);
-        body.RotX = acos(cosY);
+        double cosY = Constrain(vel.y / mag, -1.0, 1.0);
+        body.rotX = acos(cosY);
         if (magXZ < 0.0001) {
-            body.RotY = 0.0;
+            body.rotY = 0.0;
         } else {
-            body.RotY = atan2(vel.X / magXZ, vel.Z / magXZ);
+            body.rotY = atan2(vel.x / magXZ, vel.z / magXZ);
         }
-        body.RotZ = 0.0;
+        body.rotZ = 0.0;
 
-        heading = Vec3{vel.X / mag, vel.Y / mag, vel.Z / mag};
+        heading = Vec3{vel.x / mag, vel.y / mag, vel.z / mag};
     }
 
     // ApplyForce addiert eine Kraft zur Beschleunigung.
@@ -53,7 +53,6 @@ struct Vehicle {
         accel = Vec3{};
         body.pos = body.pos.Add(vel);
     }
-
 };
 
 

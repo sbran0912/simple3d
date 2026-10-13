@@ -71,9 +71,9 @@ Matrix4x4 LookAtMatrix(const Vec3& cameraPos, const Vec3& target, const Vec3& up
     const Vec3 realUp = right.Cross(forward);
 
     return Matrix4x4{{
-        {right.X, right.Y, right.Z, -right.Dot(cameraPos)},
-        {realUp.X, realUp.Y, realUp.Z, -realUp.Dot(cameraPos)},
-        {forward.X, forward.Y, forward.Z, -forward.Dot(cameraPos)},
+        {right.x, right.y, right.z, -right.Dot(cameraPos)},
+        {realUp.x, realUp.y, realUp.z, -realUp.Dot(cameraPos)},
+        {forward.x, forward.y, forward.z, -forward.Dot(cameraPos)},
         {0, 0, 0, 1},
     }};
 }
