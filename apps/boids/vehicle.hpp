@@ -57,6 +57,7 @@ struct Vehicle {
     array<double, 4> dna{};
 
     Vehicle(const Body& b);
+    Vehicle(const Body& b, const Vec3& v);
 
     // alignToVelocity richtet den Body an der Geschwindigkeit aus.
     void alignToVelocity();

@@ -43,6 +43,7 @@ void FloatingBox::update(double t) {
 // ====================================================================
 
 Vehicle::Vehicle(const Body& b) : body{b} {}
+Vehicle::Vehicle(const Body& b, const Vec3& v) : body{b}, vel{v} {}
 
 void Vehicle::alignToVelocity() {
     const double mag = sqrt(vel.x * vel.x + vel.y * vel.y + vel.z * vel.z);

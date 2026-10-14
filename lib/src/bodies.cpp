@@ -4,7 +4,6 @@
 
 // Importiert werden nur die tatsaechlich verwendeten std-Namen.
 using std::fabs;
-using std::move;
 using std::size_t;
 
 // ====================================================================

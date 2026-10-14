@@ -105,12 +105,13 @@ int main() {
             RandomFloat(-spawnY, spawnY),
             RandomFloat(-spawnZ, spawnZ),
         };
-        Vehicle v(MakeBody(pyramidMesh, pos));
-        v.vel = Vec3{
+        const Vec3 velocity = Vec3{
             RandomFloat(-1.0, 1.0),
             RandomFloat(-1.0, 1.0),
             RandomFloat(-1.0, 1.0),
         }.Mag(1.0);
+
+        Vehicle v{MakeBody(pyramidMesh, pos), velocity};
         v.alignToVelocity();
         vehicles.push_back(v);
     }
