@@ -71,7 +71,7 @@ int main() {
         {-240.0,  120.0,    0.0},
         { 240.0,  120.0,    0.0},
         {-240.0, -120.0,  240.0},
-        {   0.0,   40.0,  240.0},
+        {   0.0,  -40.0,  240.0},
     };
 
     vector<FloatingBox> obstacles;
@@ -132,7 +132,14 @@ int main() {
         }
 
         // Flocking: erst die Kraefte sammeln, dann integrieren.
+        const Vec3 center = scene.Cam.Target;
         for (Vehicle& v : vehicles) {
+            // Bei gedrueckter Maustaste wirkt zusaetzlich eine Kraft zum
+            // Szenenzentrum (scene.Cam.Target) auf jedes Boid.
+            if (IsMouseDown()) {
+                const Vec3 toCenter = center.Sub(v.body.pos).Normalize();
+                v.applyForce(toCenter.Scale(0.05));
+            }
             v.separate(vehicles);
             v.align(vehicles);
             v.cohesion(vehicles);
